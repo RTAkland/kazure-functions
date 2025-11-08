@@ -11,9 +11,20 @@ provide some simple functions to create routes
 Add maven repository
 
 ```kotlin
+// build.gradle.kts
 repositories {
     mavenCentral()
     maven("https://repo.maven.rtast.cn/releases")
+}
+
+// settings.gradle.kts
+
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven("https://repo.maven.rtast.cn/releases/")
+    }
 }
 ```
 
