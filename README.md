@@ -63,14 +63,7 @@ host.json
   },
   "extensions": {
     "http": {
-      "routePrefi```kotlin
-import cn.rtast.kazure.util.Resources
-
-fun test() {
-    val plainText: String = Resources.readText("path/to/text/resources.txt")
-    val bytesContent: ByteArray = Resoures.readBytes("path/to/bytes/resources.bin")
-}
-```x": ""
+      "routePrefix": ""
     }
   }
 }
