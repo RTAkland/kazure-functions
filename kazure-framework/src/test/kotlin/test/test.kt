@@ -1,28 +1,23 @@
 /*
  * Copyright © 2025 RTAkland
  * Author: RTAkland
- * Date: 11/8/25
+ * Date: 11/9/25
  */
 
 
-package k
+package test
 
 import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.functions.HttpAzureFunction
-import cn.rtast.kazure.respondResource
-import cn.rtast.kazure.trigger.HttpRouting
+import cn.rtast.kazure.respondText
 
-class MyFunction : HttpAzureFunction<String>() {
-//    @PathParam("name", String::class)
-    @HttpRouting("time")
+class Fun1: HttpAzureFunction<String>(){
     override fun httpEntrypoint(
         request: HttpRequest<String>,
         context: HttpContext,
     ): HttpResponse {
-        println()
-        return request.respondResource("test-content.txt")
+        return request.respondText("1")
     }
 }
-

@@ -13,7 +13,7 @@ import com.microsoft.azure.functions.HttpResponseMessage
 import com.microsoft.azure.functions.annotation.BindingName
 import java.util.*
 
-public typealias HttpRequest = HttpRequestMessage<Optional<String>>
+public typealias HttpRequest<T> = HttpRequestMessage<T>
 
 public typealias HttpContext = ExecutionContext
 

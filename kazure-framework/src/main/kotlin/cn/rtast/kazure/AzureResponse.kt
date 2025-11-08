@@ -14,7 +14,7 @@ import java.io.File
 import java.io.InputStream
 
 
-public fun HttpRequest.respondText(
+public fun <T> HttpRequest<T>.respondText(
     body: String, headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,
 ): HttpResponse {
@@ -25,7 +25,7 @@ public fun HttpRequest.respondText(
     return builder.build()
 }
 
-public fun HttpRequest.respondBytes(
+public fun <T> HttpRequest<T>.respondBytes(
     bytes: ByteArray,
     headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,
@@ -37,7 +37,7 @@ public fun HttpRequest.respondBytes(
     return builder.build()
 }
 
-public fun HttpRequest.respondInputStream(
+public fun <T> HttpRequest<T>.respondInputStream(
     stream: InputStream,
     headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,
@@ -49,7 +49,7 @@ public fun HttpRequest.respondInputStream(
     return builder.build()
 }
 
-public fun HttpRequest.respondFile(
+public fun <T> HttpRequest<T>.respondFile(
     file: File,
     headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,
@@ -61,7 +61,7 @@ public fun HttpRequest.respondFile(
     return builder.build()
 }
 
-public fun HttpRequest.respondResource(
+public fun <T> HttpRequest<T>.respondResource(
     path: String,
     headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,

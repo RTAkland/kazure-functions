@@ -7,12 +7,7 @@
 
 package cn.rtast.kazure.functions
 
-import cn.rtast.kazure.HttpRequest
-
-public sealed interface AzureFunction {
-    @Suppress("PropertyName")
-    public var __request: HttpRequest?
-}
+public sealed interface AzureFunction
 
 
 

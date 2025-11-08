@@ -15,7 +15,7 @@ import cn.rtast.kazure.respondText
 import cn.rtast.kazure.trigger.HttpRouting
 
 
-@HttpRouting("/time3/{name}")
-fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpResponse {
-    return req.respondText(name)
-}
+//@HttpRouting("/time3/{name}")
+//fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpResponse {
+//    return req.respondText(name)
+//}

@@ -10,10 +10,9 @@ import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 
-public abstract class HttpAzureFunction : AzureFunction {
-    public override var __request: HttpRequest? = null
+public abstract class HttpAzureFunction<T> : AzureFunction {
     public abstract fun httpEntrypoint(
-        request: HttpRequest,
+        request: HttpRequest<T>,
         context: HttpContext,
     ): HttpResponse
 }
