@@ -10,6 +10,16 @@ Read [docs](docs/README.md) for more information
 
 # Quickstart
 
+
+> The latest release is may not the latest version
+
+Kotlin versions and plugin version table
+
+| Kotlin   | KAzure         |
+|----------|----------------|
+| `2.2.21` | `1.0.0-2.2.21` |
+| `2.2.20` | `1.0.0-2.2.20` |
+
 ## Configure
 
 Add maven repository
@@ -54,6 +64,7 @@ azurefunctions {
 > Create 2 files in root project path: `host.json` `local.settings.json`
 
 host.json
+
 ```json
 {
   "version": "2.0",
@@ -72,6 +83,7 @@ host.json
 ---
 
 local.settings.json
+
 ```json
 {
   "IsEncrypted": false,
@@ -99,6 +111,7 @@ local.settings.json
 ## Add http routing
 
 > There's 2 ways to create http routing
+
 ```kotlin
 // first, inherit HttpAzureFunction
 // this way can not use path template
