@@ -1,0 +1,29 @@
+[versions]
+kotlin = "2.2.20"
+ksp = "2.2.20-2.0.4"
+azure = "1.16.1"
+shadow = "8.1.1"
+build-config = "5.6.5"
+auto-service = "1.1.1"
+azure-functions-java-library = "3.2.2"
+
+[libraries]
+kotlin-compiler = { module = "org.jetbrains.kotlin:kotlin-compiler", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-gradle-plugin-api = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+auto-service = { module = "com.google.auto.service:auto-service", version.ref = "auto-service" }
+azure-functions-java-library = { module = "com.microsoft.azure.functions:azure-functions-java-library", version.ref = "azure-functions-java-library" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-symbol-processor-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+
+[bundles]
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+azure = { id = "com.microsoft.azure.azurefunctions", version.ref = "azure" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+build-config = { id = "com.github.gmazzo.buildconfig", version.ref = "build-config" }
+maven-publish = { id = "maven-publish" }
+kapt = { id = "org.jetbrains.kotlin.kapt" }
+java-gradle-plugin = { id = "java-gradle-plugin" }

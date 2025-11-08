@@ -1,0 +1,28 @@
+/*
+ * Copyright © 2025 RTAkland
+ * Author: RTAkland
+ * Date: 11/7/25
+ */
+
+
+@file:OptIn(UnsafeDuringIrConstructionAPI::class)
+
+package cn.rtast.kazure.compiler.util
+
+import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
+import org.jetbrains.kotlin.ir.types.classFqName
+import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.name.FqName
+
+fun IrClass.isSubclassOf(targetInterfaceFqName: FqName): Boolean {
+    return this.superTypes.any { superType ->
+        val superFqName = superType.classFqName?.asString()
+        if (superFqName == targetInterfaceFqName.asString()) {
+            true
+        } else {
+            val superClass = superType.classifierOrNull?.owner as? IrClass
+            superClass?.isSubclassOf(targetInterfaceFqName) ?: false
+        }
+    }
+}
