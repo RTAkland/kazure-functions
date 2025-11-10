@@ -13,4 +13,4 @@ import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
-public annotation class AuthConsumer(val provider: KClass<out AuthorizationConfigure<*, out BaseCredential>>)
+public annotation class AuthConsumer(val provider: KClass<out AuthorizationConfigure<out BaseCredential>>)

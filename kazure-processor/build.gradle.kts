@@ -6,7 +6,8 @@ plugins {
 
 dependencies {
     implementation(libs.ksp.symbol.processor.api)
-    compileOnly(project(":kazure-framework"))
+    implementation("com.squareup:kotlinpoet:2.2.0")
+    implementation("com.squareup:kotlinpoet-ksp:2.2.0")
 }
 
 kotlin {

@@ -11,6 +11,6 @@ import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.auth.credentials.BasicCredential
 
-public interface BasicAuthorizationProvider<T> : AuthorizationConfigure<T, BasicCredential> {
-    override fun verify(request: HttpRequest<T>, context: HttpContext, credential: BasicCredential?): Boolean
+public interface BasicAuthorizationProvider : AuthorizationConfigure<BasicCredential> {
+    override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential): Boolean
 }

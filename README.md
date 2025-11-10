@@ -17,7 +17,7 @@ Kotlin versions and plugin version table
 
 | Kotlin   | KAzure         |
 |----------|----------------|
-| `2.2.21` | `1.1.1-2.2.21` |
+| `2.2.21` | `1.2.0-2.2.21` |
 | `2.2.20` | `1.0.0-2.2.20` |
 
 ## Configure
@@ -42,16 +42,25 @@ pluginManagement {
 }
 ```
 
-Apply the gradle plugin
+### Apply the gradle plugin
 
 ```kotlin
 plugins {
     id("kazure") version "<version>"
+    id("com.google.devtools.ksp") version "2.2.21-2.0.4"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"  // It is best to use the latest version.
+}
+
+// Enable context-parameter for auth provider Required!!!
+kotlin {
+    jvmToolchain(11)
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+    }
 }
 ```
 
-Configure azure plugin
+### Configure azure plugin
 
 > Before start please go to azure and create a functions app
 
@@ -88,22 +97,7 @@ local.settings.json
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "java",
-    "CosmosDBDatabaseName": "",
-    "CosmosDBCollectionName": "",
-    "AzureWebJobsCosmosDBConnectionString": "",
-    "AzureWebJobsEventGridOutputBindingTopicUriString": "",
-    "AzureWebJobsEventGridOutputBindingTopicKeyString": "",
-    "AzureWebJobsEventHubSender": "",
-    "AzureWebJobsEventHubSender_2": "",
-    "BrokerList": "",
-    "ConfluentCloudUsername": "",
-    "ConfluentCloudPassword": "",
-    "AzureWebJobsServiceBus": "",
-    "SBTopicName": "",
-    "SBTopicSubName": "",
-    "SBQueueName": ""
   }
 }
 ```
@@ -120,22 +114,23 @@ import cn.rtast.kazure.trigger.HttpRouting
 import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 
-object Basic1AuthProvider : BasicAuthorizationProvider<Any> {
+// Make sure your auth provider class is object class
+object Basic1AuthProvider : BasicAuthorizationProvider {
     override fun verify(
-        request: HttpRequest<Any>,
+        request: HttpRequest<*>,
         context: HttpContext,
-        credential: BasicCredential?,
+        credential: BasicCredential,
     ): Boolean {
-        return credential?.let { credential.username == "RTAkland" && credential.password == "123" }
-            ?: false
+        return (credential.username == "admin" && credential.password == "123")
     }
 }
 
 // Using authorization provider
+context(cred: BasicCredential)
 @AuthConsumer(Basic1AuthProvider::class)
-@HttpRouting("/time3/{name}")
+@HttpRouting("/time3/{name}", methods = [HttpMethod.POST])
 fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpResponse {
-    return req.respondText(name)
+    return req.respondText("Hello ${cred.username} at $name")
 }
 ```
 

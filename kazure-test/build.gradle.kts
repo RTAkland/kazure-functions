@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.ksp)
-    id("kazure") version "1.0.1-2.2.21"
+    id("kazure") version "1.1.1-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
 }
 
@@ -14,6 +15,10 @@ kotlin {
     jvmToolchain(11)
 
     explicitApi = ExplicitApiMode.Disabled
+
+    compilerOptions {
+        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+    }
 }
 
 //tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

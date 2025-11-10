@@ -19,8 +19,11 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
+import org.jetbrains.kotlin.ir.builders.declarations.addTypeParameter
+import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.builders.irGetObjectValue
 import org.jetbrains.kotlin.ir.builders.irIfThenElse
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrEnumEntry
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createBlockBody
@@ -29,14 +32,8 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.impl.*
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
-import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.defaultType
-import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.ir.util.getAnnotation
-import org.jetbrains.kotlin.ir.util.hasAnnotation
-import org.jetbrains.kotlin.ir.util.statements
-import org.jetbrains.kotlin.ir.util.superTypes
-import org.jetbrains.kotlin.ir.util.toArrayOrPrimitiveArrayType
+import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -81,6 +78,8 @@ class KAzureIrTransformer(
     ///////////////////////////////////////////////////////
 
     fun handleHttpFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
+        if (!func.hasAnnotation(KspTaggedRoutingFqName)) return
+        addFunctionNameToFunction(pluginContext, func, func.name.asString())
         val path = (annotation.getParameterValue("path") as IrConstImpl).value as String
         val methodsValue = annotation.getParameterValue("methods")
             ?: generateDefaultHttpMethodsIrExpression()
@@ -275,7 +274,7 @@ class KAzureIrTransformer(
     override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
         when {
             declaration.hasAnnotation(HttpRoutingFqName) -> {
-                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+//                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
                 val ann = declaration.getAnnotation(HttpRoutingFqName)!!
                 handleHttpFunction(declaration, ann)
             }

@@ -12,6 +12,6 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.auth.credentials.JwtCredential
 
 @Deprecated("Not Impl", level = DeprecationLevel.HIDDEN)
-public interface JwtAuthorizationProvider<T> : AuthorizationConfigure<T, JwtCredential> {
-    override fun verify(request: HttpRequest<T>, context: HttpContext, credential: JwtCredential?): Boolean
+public interface JwtAuthorizationProvider : AuthorizationConfigure<JwtCredential> {
+    override fun verify(request: HttpRequest<*>, context: HttpContext, credential: JwtCredential): Boolean
 }

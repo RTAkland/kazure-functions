@@ -78,3 +78,5 @@ val JwtAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.JwtAuthoriza
 val BasicCredentialFqName = "cn.rtast.kazure.auth.credentials.BasicCredential".fqName
 val BearerCredentialFqName = "cn.rtast.kazure.auth.credentials.BearerCredential".fqName
 val JwtCredentialFqName = "cn.rtast.kazure.auth.credentials.JwtCredential".fqName
+
+val KspTaggedRoutingFqName = "cn.rtast.kazure.trigger.internal.KspTaggedRouting".fqName
