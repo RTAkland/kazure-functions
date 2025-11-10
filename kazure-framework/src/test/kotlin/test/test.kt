@@ -11,7 +11,7 @@ import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.functions.HttpAzureFunction
-import cn.rtast.kazure.respondText
+import cn.rtast.kazure.response.respondText
 
 class Fun1: HttpAzureFunction<String>(){
     override fun httpEntrypoint(

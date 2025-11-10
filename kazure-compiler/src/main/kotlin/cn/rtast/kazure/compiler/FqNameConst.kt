@@ -36,6 +36,7 @@ val TimerTriggerFqName = "com.microsoft.azure.functions.annotation.TimerTrigger"
 val EventHubTriggerFqName = "com.microsoft.azure.functions.annotation.EventHubTrigger".fqName
 
 /**
+
  * 0 blob
  * 2 String path
  * 3 String connection = ""
@@ -67,6 +68,13 @@ val BlobRoutingFqName = "cn.rtast.kazure.trigger.BlobRouting".fqName
 val QueueRoutingFqName = "cn.rtast.kazure.trigger.QueueRouting".fqName
 val TimerRoutingFqName = "cn.rtast.kazure.trigger.TimerRouting".fqName
 
-val HttpRequestMessageFqName = "com.microsoft.azure.functions.HttpRequestMessage".fqName
+val AuthConsumerFqName = "cn.rtast.kazure.auth.AuthConsumer".fqName
 
-val BindingNameFqName = "com.microsoft.azure.functions.annotation.BindingName".fqName
+val AuthorizationConfigureFqName = "cn.rtast.kazure.auth.provider.AuthorizationConfigure".fqName
+val BasicAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.BasicAuthorizationProvider".fqName
+val BearerAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.BearerAuthorizationProvider".fqName
+val JwtAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.JwtAuthorizationProvider".fqName
+
+val BasicCredentialFqName = "cn.rtast.kazure.auth.credentials.BasicCredential".fqName
+val BearerCredentialFqName = "cn.rtast.kazure.auth.credentials.BearerCredential".fqName
+val JwtCredentialFqName = "cn.rtast.kazure.auth.credentials.JwtCredential".fqName

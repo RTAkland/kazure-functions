@@ -8,7 +8,6 @@
 package cn.rtast.kazure.compiler
 
 import cn.rtast.kazure.compiler.ir.KAzureIrTransformer
-import cn.rtast.kazure.compiler.ir.TopLevelFunctionTransformer
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -25,13 +24,6 @@ class KAzureExtension(
     ) {
         moduleFragment.transform(
             KAzureIrTransformer(
-                messageCollector,
-                pluginContext,
-                configuration
-            ), null
-        )
-        moduleFragment.transform(
-            TopLevelFunctionTransformer(
                 messageCollector,
                 pluginContext,
                 configuration

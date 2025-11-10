@@ -13,28 +13,39 @@ import cn.rtast.kazure.compiler.util.*
 import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
+import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
-import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.builders.irGetObjectValue
+import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.declarations.IrEnumEntry
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
+import org.jetbrains.kotlin.ir.declarations.createBlockBody
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.impl.*
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
+import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.defaultType
-import org.jetbrains.kotlin.ir.util.constructors
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.getAnnotation
+import org.jetbrains.kotlin.ir.util.hasAnnotation
+import org.jetbrains.kotlin.ir.util.statements
+import org.jetbrains.kotlin.ir.util.superTypes
 import org.jetbrains.kotlin.ir.util.toArrayOrPrimitiveArrayType
+import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
-import java.util.*
+import org.jetbrains.kotlin.name.Name
 
 class KAzureIrTransformer(
+    @Suppress("unused")
     private val messageCollector: MessageCollector,
     private val pluginContext: IrPluginContext,
+    @Suppress("unused")
     private val configuration: CompilerConfiguration,
 ) : IrElementTransformerVoidWithContext() {
 
@@ -76,6 +87,105 @@ class KAzureIrTransformer(
         val authLevelValue = annotation.getParameterValue("authLevel")
             ?: generateDefaultEnumIrExpression(AuthorizationLevelFqName)
         val requestParam = func.valueParameters[0]
+
+        func.getAnnotation(AuthConsumerFqName)?.let { authProviderAnnotation ->
+            val irBuilder = pluginContext.irBuiltIns.createIrBuilder(func.symbol)
+            val providerRef = (authProviderAnnotation.getParameterValue("provider") as
+                    IrClassReferenceImpl)
+            val providerSymbol = providerRef.symbol as IrClassSymbol
+            val verifyFn = providerSymbol.owner.functions
+                .first { it.name.asString() == "verify" && it.valueParameters.size == 3 }
+            val providerExpr = IrGetObjectValueImpl(
+                UNDEFINED_OFFSET,
+                UNDEFINED_OFFSET,
+                providerRef.type,
+                providerSymbol
+            )
+            val verifyFnCall = IrCallImpl(
+                UNDEFINED_OFFSET, UNDEFINED_OFFSET,
+                verifyFn.returnType, verifyFn.symbol,
+            ).apply {
+                dispatchReceiver = providerExpr
+                putValueArgument(0, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol))
+                putValueArgument(1, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[1].symbol))
+                // set cred
+                val callableId = when {
+                    providerRef.isSubclassOf(BasicAuthorizationProviderFqName) -> {
+                        CallableId(
+                            "cn.rtast.kazure.auth.provider.func".fqName,
+                            null, Name.identifier("__getBasicCredential")
+                        )
+                    }
+
+                    providerRef.isSubclassOf(BearerAuthorizationProviderFqName) -> {
+                        CallableId(
+                            "cn.rtast.kazure.auth.provider.func".fqName,
+                            null, Name.identifier("__getBearerCredential")
+                        )
+                    }
+
+                    providerRef.isSubclassOf(JwtAuthorizationProviderFqName) -> {
+                        CallableId(
+                            "cn.rtast.kazure.auth.provider.func".fqName,
+                            null, Name.identifier("__getJwtCredential")
+                        )
+                    }
+
+                    else -> throw IllegalStateException("Unknown authorization provider type")
+                }
+                val refFuncSymbol = pluginContext.referenceFunctions(callableId).first()
+
+                val getCredCall =
+                    IrCallImpl(
+                        UNDEFINED_OFFSET,
+                        UNDEFINED_OFFSET,
+                        refFuncSymbol.owner.returnType,
+                        refFuncSymbol
+                    ).apply {
+                        putValueArgument(
+                            0,
+                            IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
+                        )
+                    }
+                putValueArgument(2, getCredCall)
+            }
+
+            val requestGet = IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
+            val unAuthorizedCallableId = CallableId(
+                "cn.rtast.kazure.auth.provider.func".fqName,
+                null, Name.identifier("__unAuthorized")
+            )
+            val unAuthFuncSymbol = pluginContext.referenceFunctions(unAuthorizedCallableId).first()
+            val unAuthCall = IrCallImpl(
+                UNDEFINED_OFFSET,
+                UNDEFINED_OFFSET,
+                unAuthFuncSymbol.owner.returnType,
+                unAuthFuncSymbol
+            ).apply { putValueArgument(0, requestGet) }
+            val returnStatement = IrReturnImpl(
+                UNDEFINED_OFFSET,
+                UNDEFINED_OFFSET,
+                unAuthCall.type,
+                func.symbol,
+                unAuthCall
+            )
+            val ifStatement = irBuilder.irIfThenElse(
+                type = pluginContext.irBuiltIns.unitType,
+                condition = irBuilder.irNot(verifyFnCall),
+                thenPart = returnStatement,
+                elsePart = irBuilder.irGetObjectValue(
+                    pluginContext.irBuiltIns.unitType,
+                    pluginContext.irBuiltIns.unitClass
+                )
+            )
+            val newBody = pluginContext.irFactory.createBlockBody(
+                UNDEFINED_OFFSET,
+                UNDEFINED_OFFSET,
+                listOf(ifStatement) + func.body!!.statements
+            )
+            func.body = newBody
+            func.removeAnnotation(AuthConsumerFqName)
+        }
 
         // add @HttpTrigger into request param
         requestParam.addAnnotation(pluginContext, HttpTriggerFqName) {
@@ -162,26 +272,46 @@ class KAzureIrTransformer(
 
     ///////////////////////////////////////
 
-    override fun visitClassNew(declaration: IrClass): IrStatement {
-        if (!declaration.isSubclassOf(AzureFunctionFqName)) super.visitClassNew(declaration)
-        declaration.functions.forEach { func ->
-            val ra = func.findAnnotatedRouting() ?: return super.visitClassNew(declaration)
-            addFunctionNameToFunction(pluginContext, func, declaration.name.asString())
-            when {
-                declaration.isSubclassOf(HttpAzureFunctionFqName) -> handleHttpFunction(func, ra)
-                declaration.isSubclassOf(BlobAzureFunctionFqName) -> handleBlobFunction(func, ra)
-                declaration.isSubclassOf(EventHubAzureFunctionFqName) -> handleEventHubFunction(func, ra)
-                declaration.isSubclassOf(TimerAzureFunctionFqName) -> handleTimerFunction(func, ra)
-                declaration.isSubclassOf(QueueAzureFunctionFqName) -> handleQueueFunction(func, ra)
+    override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
+        when {
+            declaration.hasAnnotation(HttpRoutingFqName) -> {
+                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+                val ann = declaration.getAnnotation(HttpRoutingFqName)!!
+                handleHttpFunction(declaration, ann)
             }
 
-            // remove @HttpRouting annotation from origin function
-            func.removeAnnotation(HttpRoutingFqName)
-            func.removeAnnotation(BlobRoutingFqName)
-            func.removeAnnotation(QueueRoutingFqName)
-            func.removeAnnotation(TimerRoutingFqName)
-            func.removeAnnotation(EventHubRoutingFqName)
+            declaration.hasAnnotation(BlobRoutingFqName) -> {
+                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+                val ann = declaration.getAnnotation(BlobRoutingFqName)!!
+                handleBlobFunction(declaration, ann)
+            }
+
+            declaration.hasAnnotation(TimerRoutingFqName) -> {
+                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+                val ann = declaration.getAnnotation(TimerRoutingFqName)!!
+                handleTimerFunction(declaration, ann)
+            }
+
+            declaration.hasAnnotation(QueueRoutingFqName) -> {
+                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+                val ann = declaration.getAnnotation(QueueRoutingFqName)!!
+                handleQueueFunction(declaration, ann)
+            }
+
+            declaration.hasAnnotation(EventHubRoutingFqName) -> {
+                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
+                val ann = declaration.getAnnotation(EventHubRoutingFqName)!!
+                handleEventHubFunction(declaration, ann)
+            }
+
+            else -> return super.visitFunctionNew(declaration)
         }
-        return super.visitClassNew(declaration)
+        // remove @HttpRouting annotation from origin function
+        declaration.removeAnnotation(HttpRoutingFqName)
+        declaration.removeAnnotation(BlobRoutingFqName)
+        declaration.removeAnnotation(QueueRoutingFqName)
+        declaration.removeAnnotation(TimerRoutingFqName)
+        declaration.removeAnnotation(EventHubRoutingFqName)
+        return super.visitFunctionNew(declaration)
     }
 }

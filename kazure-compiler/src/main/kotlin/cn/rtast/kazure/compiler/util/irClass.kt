@@ -9,10 +9,13 @@
 
 package cn.rtast.kazure.compiler.util
 
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.expressions.IrClassReference
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.ir.util.superTypes
 import org.jetbrains.kotlin.name.FqName
 
 fun IrClass.isSubclassOf(targetInterfaceFqName: FqName): Boolean {
@@ -25,4 +28,10 @@ fun IrClass.isSubclassOf(targetInterfaceFqName: FqName): Boolean {
             superClass?.isSubclassOf(targetInterfaceFqName) ?: false
         }
     }
+}
+
+fun FqName.refCls(ctx: IrPluginContext) = ctx.referenceClass(this.classId)!!
+
+fun IrClassReference.isSubclassOf(fqName: FqName): Boolean {
+    return this.symbol.superTypes().any { it.classFqName == fqName }
 }

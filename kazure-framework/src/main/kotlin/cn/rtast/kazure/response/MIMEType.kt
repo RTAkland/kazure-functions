@@ -1,11 +1,4 @@
-/*
- * Copyright © 2025 RTAkland
- * Author: RTAkland
- * Date: 11/8/25
- */
-
-
-package cn.rtast.kazure
+package cn.rtast.kazure.response
 
 import java.io.File
 
