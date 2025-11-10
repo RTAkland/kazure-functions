@@ -1,5 +1,6 @@
 dependencies {
     api(libs.azure.functions.java.library)
+    api(libs.gson)
 }
 
 publishing {
