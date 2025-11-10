@@ -110,46 +110,29 @@ local.settings.json
 
 ## Add http routing
 
-> There's 2 ways to create http routing
-
 ```kotlin
-// first, inherit HttpAzureFunction
-// this way can not use path template
-
-import cn.rtast.kazure.HttpContext
-import cn.rtast.kazure.HttpRequest
-import cn.rtast.kazure.HttpResponse
-import cn.rtast.kazure.functions.HttpAzureFunction
-import cn.rtast.kazure.respondResource
-import cn.rtast.kazure.trigger.HttpRouting
-
-class MyFunction : HttpAzureFunction() {
-    @HttpRouting("time")
-    override fun httpEntrypoint(
-        request: HttpRequest,
-        context: HttpContext,
-    ): HttpResponse {
-        println()
-        return request.respondResource("test-content.txt")
-    }
-
-    @HttpRouting("time2")
-    fun e2(request: HttpRequest, context: HttpContext): HttpResponse {
-        return request.respondResource("test-content.txt")
-    }
-}
-```
-
-```kotlin
-// second topLevel functions
-
 import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.Param
 import cn.rtast.kazure.respondText
 import cn.rtast.kazure.trigger.HttpRouting
+import cn.rtast.kazure.auth.credentials.BasicCredential
+import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 
+object Basic1AuthProvider : BasicAuthorizationProvider<Any> {
+    override fun verify(
+        request: HttpRequest<Any>,
+        context: HttpContext,
+        credential: BasicCredential?,
+    ): Boolean {
+        return credential?.let { credential.username == "RTAkland" && credential.password == "123" }
+            ?: false
+    }
+}
+
+// Using authorization provider
+@AuthConsumer(Basic1AuthProvider::class)
 @HttpRouting("/time3/{name}")
 fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpResponse {
     return req.respondText(name)
