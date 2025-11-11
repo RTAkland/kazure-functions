@@ -19,17 +19,19 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     private fun registerTasks(project: Project) {
-        // TODO
-//        val syncPathParamTask = project.tasks.register("syncPathParam") {
-//            it.group = "kazure"
-//            it.description = "Generate path params"
-//        }
-//        project.afterEvaluate {
-//            val kspKotlinTask = project.tasks.findByName("kspKotlin")!!
-//            syncPathParamTask.configure { t ->
-//                t.dependsOn(kspKotlinTask)
-//            }
-//        }
+        val config = project.extensions.getByType(KAzureExtension::class.java)
+        if (config.listingResources.get()) {
+            val generateResourceTask = project.tasks.register("generateResources", ListingResourcesTask::class.java) {
+                it.group = "kazure"
+            }
+            project.tasks.named("azureFunctionsPackage").configure {
+                it.dependsOn(generateResourceTask.get().name)
+            }
+        }
+    }
+
+    private fun registerExtension(project: Project) {
+        project.extensions.create("kazure", KAzureExtension::class.java)
     }
 
     override fun applyToCompilation(kotlinCompilation: KotlinCompilation<*>): Provider<List<SubpluginOption>> {
@@ -42,6 +44,7 @@ class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
         target.pluginManager.apply("com.microsoft.azure.azurefunctions")
         target.pluginManager.apply("com.google.devtools.ksp")
         target.dependencies.add("ksp", "kazure:kazure-processor:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
+        registerExtension(target)
         registerTasks(target)
     }
 

@@ -13,7 +13,9 @@ import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.Param
 import cn.rtast.kazure.auth.AuthConsumer
 import cn.rtast.kazure.auth.credentials.BasicCredential
+import cn.rtast.kazure.resources.StaticAssets
 import cn.rtast.kazure.resources.resources
+import cn.rtast.kazure.resources.staticAssets
 import cn.rtast.kazure.response.respondText
 import cn.rtast.kazure.trigger.HttpRouting
 
@@ -58,3 +60,9 @@ fun indexWithAuth(req: HttpRequest<String?>, ctx: HttpContext, @Param("s") s: St
 //        index()
 //    }
 //}
+
+@StaticAssets("c", "a")
+val c: ByteArray by staticAssets
+
+@StaticAssets("d", "a")
+val d: ByteArray by staticAssets

@@ -1,1 +1,2 @@
 cn.rtast.kazure.processor.KAzureProcessorProvider
+cn.rtast.kazure.processor.StaticRoutingProcessorProvider

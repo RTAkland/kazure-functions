@@ -16,3 +16,9 @@ class KAzureProcessorProvider: SymbolProcessorProvider {
         return KAzureProcessor(environment.codeGenerator, environment.logger)
     }
 }
+
+class StaticRoutingProcessorProvider: SymbolProcessorProvider {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+        return StaticRoutingProcessor(environment.codeGenerator, environment.logger)
+    }
+}
