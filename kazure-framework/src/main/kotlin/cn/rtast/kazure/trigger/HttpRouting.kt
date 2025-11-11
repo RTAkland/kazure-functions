@@ -9,6 +9,9 @@ package cn.rtast.kazure.trigger
 import com.microsoft.azure.functions.HttpMethod
 import com.microsoft.azure.functions.annotation.AuthorizationLevel
 
+/**
+ * Mark a function as http routing entrypoint
+ */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
 public annotation class HttpRouting(

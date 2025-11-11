@@ -17,7 +17,7 @@ Azure functions有Java运行时所以也可以使用kotlin来编写functions路�
 在使用时尽量避免使用`反射`来加载jar内的资源, 如果有需要可以通过内置的API来访问
 
 ```kotlin
-import cn.rtast.kazure.util.Resources
+import cn.rtast.kazure.resources.Resources
 
 fun test() {
     val plainText: String = Resources.readText("path/to/text/resources.txt")

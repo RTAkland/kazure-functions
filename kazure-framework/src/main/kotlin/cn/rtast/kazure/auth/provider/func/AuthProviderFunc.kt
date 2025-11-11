@@ -17,6 +17,10 @@ import cn.rtast.kazure.response.respond
 import com.microsoft.azure.functions.HttpStatus
 import kotlin.io.encoding.Base64
 
+///////////////////////////////////////////////////////////
+// All functions are used internal only
+///////////////////////////////////////////////////////////
+
 public fun <T> __getBasicCredential(req: HttpRequest<T>): BasicCredential? {
     val authorizationHeader = req.headers["authorization"] ?: return null
     val prefix = "Basic "

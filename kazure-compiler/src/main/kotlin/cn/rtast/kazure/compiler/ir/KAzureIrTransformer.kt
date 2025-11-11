@@ -13,30 +13,24 @@ import cn.rtast.kazure.compiler.util.*
 import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
-import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
-import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
-import org.jetbrains.kotlin.ir.builders.declarations.addTypeParameter
-import org.jetbrains.kotlin.ir.builders.declarations.buildFun
-import org.jetbrains.kotlin.ir.builders.irGetObjectValue
-import org.jetbrains.kotlin.ir.builders.irIfThenElse
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrEnumEntry
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.createBlockBody
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.impl.*
-import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetEnumValueImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrVarargImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.defaultType
-import org.jetbrains.kotlin.ir.util.*
-import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
+import org.jetbrains.kotlin.ir.util.getAnnotation
+import org.jetbrains.kotlin.ir.util.hasAnnotation
+import org.jetbrains.kotlin.ir.util.toArrayOrPrimitiveArrayType
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.Name
 
 class KAzureIrTransformer(
     @Suppress("unused")
@@ -44,6 +38,7 @@ class KAzureIrTransformer(
     private val pluginContext: IrPluginContext,
     @Suppress("unused")
     private val configuration: CompilerConfiguration,
+    private val processedFuncList: MutableList<String>,
 ) : IrElementTransformerVoidWithContext() {
 
     private val irBuiltIns = pluginContext.irBuiltIns
@@ -78,7 +73,8 @@ class KAzureIrTransformer(
     ///////////////////////////////////////////////////////
 
     fun handleHttpFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        if (!func.hasAnnotation(KspTaggedRoutingFqName)) return
+        if (func.hasAnnotation(KspTaggedRoutingFqName) || processedFuncList.any { func.fqNameWhenAvailable?.asString() == it }) return
+        messageCollector.log(func.name.asString())
         addFunctionNameToFunction(pluginContext, func, func.name.asString())
         val path = (annotation.getParameterValue("path") as IrConstImpl).value as String
         val methodsValue = annotation.getParameterValue("methods")
@@ -87,104 +83,104 @@ class KAzureIrTransformer(
             ?: generateDefaultEnumIrExpression(AuthorizationLevelFqName)
         val requestParam = func.valueParameters[0]
 
-        func.getAnnotation(AuthConsumerFqName)?.let { authProviderAnnotation ->
-            val irBuilder = pluginContext.irBuiltIns.createIrBuilder(func.symbol)
-            val providerRef = (authProviderAnnotation.getParameterValue("provider") as
-                    IrClassReferenceImpl)
-            val providerSymbol = providerRef.symbol as IrClassSymbol
-            val verifyFn = providerSymbol.owner.functions
-                .first { it.name.asString() == "verify" && it.valueParameters.size == 3 }
-            val providerExpr = IrGetObjectValueImpl(
-                UNDEFINED_OFFSET,
-                UNDEFINED_OFFSET,
-                providerRef.type,
-                providerSymbol
-            )
-            val verifyFnCall = IrCallImpl(
-                UNDEFINED_OFFSET, UNDEFINED_OFFSET,
-                verifyFn.returnType, verifyFn.symbol,
-            ).apply {
-                dispatchReceiver = providerExpr
-                putValueArgument(0, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol))
-                putValueArgument(1, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[1].symbol))
-                // set cred
-                val callableId = when {
-                    providerRef.isSubclassOf(BasicAuthorizationProviderFqName) -> {
-                        CallableId(
-                            "cn.rtast.kazure.auth.provider.func".fqName,
-                            null, Name.identifier("__getBasicCredential")
-                        )
-                    }
-
-                    providerRef.isSubclassOf(BearerAuthorizationProviderFqName) -> {
-                        CallableId(
-                            "cn.rtast.kazure.auth.provider.func".fqName,
-                            null, Name.identifier("__getBearerCredential")
-                        )
-                    }
-
-                    providerRef.isSubclassOf(JwtAuthorizationProviderFqName) -> {
-                        CallableId(
-                            "cn.rtast.kazure.auth.provider.func".fqName,
-                            null, Name.identifier("__getJwtCredential")
-                        )
-                    }
-
-                    else -> throw IllegalStateException("Unknown authorization provider type")
-                }
-                val refFuncSymbol = pluginContext.referenceFunctions(callableId).first()
-
-                val getCredCall =
-                    IrCallImpl(
-                        UNDEFINED_OFFSET,
-                        UNDEFINED_OFFSET,
-                        refFuncSymbol.owner.returnType,
-                        refFuncSymbol
-                    ).apply {
-                        putValueArgument(
-                            0,
-                            IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
-                        )
-                    }
-                putValueArgument(2, getCredCall)
-            }
-
-            val requestGet = IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
-            val unAuthorizedCallableId = CallableId(
-                "cn.rtast.kazure.auth.provider.func".fqName,
-                null, Name.identifier("__unAuthorized")
-            )
-            val unAuthFuncSymbol = pluginContext.referenceFunctions(unAuthorizedCallableId).first()
-            val unAuthCall = IrCallImpl(
-                UNDEFINED_OFFSET,
-                UNDEFINED_OFFSET,
-                unAuthFuncSymbol.owner.returnType,
-                unAuthFuncSymbol
-            ).apply { putValueArgument(0, requestGet) }
-            val returnStatement = IrReturnImpl(
-                UNDEFINED_OFFSET,
-                UNDEFINED_OFFSET,
-                unAuthCall.type,
-                func.symbol,
-                unAuthCall
-            )
-            val ifStatement = irBuilder.irIfThenElse(
-                type = pluginContext.irBuiltIns.unitType,
-                condition = irBuilder.irNot(verifyFnCall),
-                thenPart = returnStatement,
-                elsePart = irBuilder.irGetObjectValue(
-                    pluginContext.irBuiltIns.unitType,
-                    pluginContext.irBuiltIns.unitClass
-                )
-            )
-            val newBody = pluginContext.irFactory.createBlockBody(
-                UNDEFINED_OFFSET,
-                UNDEFINED_OFFSET,
-                listOf(ifStatement) + func.body!!.statements
-            )
-            func.body = newBody
-            func.removeAnnotation(AuthConsumerFqName)
-        }
+//        func.getAnnotation(AuthConsumerFqName)?.let { authProviderAnnotation ->
+//            val irBuilder = pluginContext.irBuiltIns.createIrBuilder(func.symbol)
+//            val providerRef = (authProviderAnnotation.getParameterValue("provider") as
+//                    IrClassReferenceImpl)
+//            val providerSymbol = providerRef.symbol as IrClassSymbol
+//            val verifyFn = providerSymbol.owner.functions
+//                .first { it.name.asString() == "verify" && it.valueParameters.size == 3 }
+//            val providerExpr = IrGetObjectValueImpl(
+//                UNDEFINED_OFFSET,
+//                UNDEFINED_OFFSET,
+//                providerRef.type,
+//                providerSymbol
+//            )
+//            val verifyFnCall = IrCallImpl(
+//                UNDEFINED_OFFSET, UNDEFINED_OFFSET,
+//                verifyFn.returnType, verifyFn.symbol,
+//            ).apply {
+//                dispatchReceiver = providerExpr
+//                putValueArgument(0, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol))
+//                putValueArgument(1, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[1].symbol))
+//                // set cred
+//                val callableId = when {
+//                    providerRef.isSubclassOf(BasicAuthorizationProviderFqName) -> {
+//                        CallableId(
+//                            "cn.rtast.kazure.auth.provider.func".fqName,
+//                            null, Name.identifier("__getBasicCredential")
+//                        )
+//                    }
+//
+//                    providerRef.isSubclassOf(BearerAuthorizationProviderFqName) -> {
+//                        CallableId(
+//                            "cn.rtast.kazure.auth.provider.func".fqName,
+//                            null, Name.identifier("__getBearerCredential")
+//                        )
+//                    }
+//
+//                    providerRef.isSubclassOf(JwtAuthorizationProviderFqName) -> {
+//                        CallableId(
+//                            "cn.rtast.kazure.auth.provider.func".fqName,
+//                            null, Name.identifier("__getJwtCredential")
+//                        )
+//                    }
+//
+//                    else -> throw IllegalStateException("Unknown authorization provider type")
+//                }
+//                val refFuncSymbol = pluginContext.referenceFunctions(callableId).first()
+//
+//                val getCredCall =
+//                    IrCallImpl(
+//                        UNDEFINED_OFFSET,
+//                        UNDEFINED_OFFSET,
+//                        refFuncSymbol.owner.returnType,
+//                        refFuncSymbol
+//                    ).apply {
+//                        putValueArgument(
+//                            0,
+//                            IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
+//                        )
+//                    }
+//                putValueArgument(2, getCredCall)
+//            }
+//
+//            val requestGet = IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
+//            val unAuthorizedCallableId = CallableId(
+//                "cn.rtast.kazure.auth.provider.func".fqName,
+//                null, Name.identifier("__unAuthorized")
+//            )
+//            val unAuthFuncSymbol = pluginContext.referenceFunctions(unAuthorizedCallableId).first()
+//            val unAuthCall = IrCallImpl(
+//                UNDEFINED_OFFSET,
+//                UNDEFINED_OFFSET,
+//                unAuthFuncSymbol.owner.returnType,
+//                unAuthFuncSymbol
+//            ).apply { putValueArgument(0, requestGet) }
+//            val returnStatement = IrReturnImpl(
+//                UNDEFINED_OFFSET,
+//                UNDEFINED_OFFSET,
+//                unAuthCall.type,
+//                func.symbol,
+//                unAuthCall
+//            )
+//            val ifStatement = irBuilder.irIfThenElse(
+//                type = pluginContext.irBuiltIns.unitType,
+//                condition = irBuilder.irNot(verifyFnCall),
+//                thenPart = returnStatement,
+//                elsePart = irBuilder.irGetObjectValue(
+//                    pluginContext.irBuiltIns.unitType,
+//                    pluginContext.irBuiltIns.unitClass
+//                )
+//            )
+//            val newBody = pluginContext.irFactory.createBlockBody(
+//                UNDEFINED_OFFSET,
+//                UNDEFINED_OFFSET,
+//                listOf(ifStatement) + func.body!!.statements
+//            )
+//            func.body = newBody
+//            func.removeAnnotation(AuthConsumerFqName)
+//        }
 
         // add @HttpTrigger into request param
         requestParam.addAnnotation(pluginContext, HttpTriggerFqName) {

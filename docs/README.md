@@ -15,7 +15,7 @@ The plugin scans annotations and modifies bytecode at the IR phase through a com
 When using it, try to avoid using reflection to load resources inside the jar. If necessary, you can access them via built-in APIs.
 
 ```kotlin
-import cn.rtast.kazure.util.Resources
+import cn.rtast.kazure.resources.Resources
 
 fun test() {
     val plainText: String = Resources.readText("path/to/text/resources.txt")

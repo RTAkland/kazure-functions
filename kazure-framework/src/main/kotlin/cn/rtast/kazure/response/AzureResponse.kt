@@ -8,16 +8,16 @@ package cn.rtast.kazure.response
 
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
-import cn.rtast.kazure.util.Resources
+import cn.rtast.kazure.HttpResponseBuilder
+import cn.rtast.kazure.HttpStatus
+import cn.rtast.kazure.resources.Resources
 import cn.rtast.kazure.util.toJson
-import com.microsoft.azure.functions.HttpResponseMessage
-import com.microsoft.azure.functions.HttpStatus
 import java.io.File
 import java.io.InputStream
 
 private typealias Headers = Map<String, String>
 
-private fun <T> HttpRequest<T>.builder(headers: Headers, status: HttpStatus): HttpResponseMessage.Builder {
+private fun <T> HttpRequest<T>.builder(headers: Headers, status: HttpStatus): HttpResponseBuilder {
     var builder = this.createResponseBuilder(status)
     for ((k, v) in headers) {
         builder = builder.header(k, v)
@@ -93,10 +93,10 @@ public fun <T> HttpRequest<T>.respondRedirect(
  * Respond any type content
  */
 public fun <T, R> HttpRequest<T>.respond(
-    body: R,
+    body: R? = null,
     status: HttpStatus,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status).body(body).build()
+): HttpResponse = this.builder(headers, status).body(body ?: status.name).build()
 
 /**
  * Respond json content

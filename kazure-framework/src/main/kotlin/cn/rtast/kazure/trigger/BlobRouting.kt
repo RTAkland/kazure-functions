@@ -8,7 +8,7 @@
 package cn.rtast.kazure.trigger
 
 /**
- * name = blob
+ * Mark a function as blob routing entrypoint
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)

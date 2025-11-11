@@ -8,7 +8,7 @@
 package cn.rtast.kazure.trigger
 
 /**
- * name = msg
+ * Mark a function as queue routing entrypoint
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)

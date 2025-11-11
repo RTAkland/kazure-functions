@@ -9,6 +9,7 @@ package cn.rtast.kazure.processor
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
 
 
@@ -82,6 +83,7 @@ class KAzureProcessor(
             .addImport("com.microsoft.azure.functions", "HttpMethod")
             .addImport("com.microsoft.azure.functions.annotation", "AuthorizationLevel")
             .addImport("com.microsoft.azure.functions", "HttpStatus")
+        val processedOriginFunctionsList = mutableListOf<String>()
         functions.forEach { func ->
             val newFunction = FunSpec.builder(func.simpleName.asString() + "_wrapped")
             val originHttpRoutingAnnotation =
@@ -119,8 +121,8 @@ class KAzureProcessor(
                 """.trimMargin()
             )
             fileSpecBuilder.addFunction(newFunction.build())
+            processedOriginFunctionsList.add(func.qualifiedName?.asString()!!)
         }
-
         val fileSpec = fileSpecBuilder.build()
         val file = codeGenerator.createNewFile(
             Dependencies.ALL_FILES,
@@ -128,6 +130,29 @@ class KAzureProcessor(
             "KAzureGenerated"
         )
         file.write(fileSpec.toString().toByteArray())
+        val initializerCode = CodeBlock.builder()
+            .add("listOf(")
+            .apply {
+                processedOriginFunctionsList.forEachIndexed { index, item ->
+                    if (index > 0) add(", ")
+                    add("%S", item)
+                }
+            }.add(")").build()
+        val listOfString = ClassName("kotlin.collections", "List")
+        val stringClass = ClassName("kotlin", "String")
+        val processedFunctionsPropertySpec = PropertySpec.builder(
+            "_____________________________________processed_______________________________",
+            listOfString.parameterizedBy(stringClass)
+        ).initializer(initializerCode).build()
+
+        val processedOriginFunctionsFileSpec = FileSpec.builder("kazure.generated.a.b.c.d.e.f.g.h.i.j.k", "processed")
+            .addProperty(processedFunctionsPropertySpec).build()
+        val processedFunctionsFile = codeGenerator.createNewFile(
+            Dependencies.ALL_FILES,
+            "kazure.generated.a.b.c.d.e.f.g.h.i.j.k",
+            "processed"
+        )
+        processedFunctionsFile.write(processedOriginFunctionsFileSpec.toString().toByteArray())
         return emptyList()
     }
 }

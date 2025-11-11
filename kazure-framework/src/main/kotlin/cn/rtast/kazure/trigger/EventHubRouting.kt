@@ -10,7 +10,7 @@ package cn.rtast.kazure.trigger
 import com.microsoft.azure.functions.annotation.Cardinality
 
 /**
- * name = eh
+ * Mark a function as eventHub routing entrypoint
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)

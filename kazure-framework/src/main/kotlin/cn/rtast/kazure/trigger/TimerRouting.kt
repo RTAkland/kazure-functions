@@ -8,7 +8,7 @@
 package cn.rtast.kazure.trigger
 
 /**
- * name = timer
+ * Mark a function as timer routing entrypoint
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
