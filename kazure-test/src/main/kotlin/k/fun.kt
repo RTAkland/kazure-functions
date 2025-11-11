@@ -61,8 +61,8 @@ fun indexWithAuth(req: HttpRequest<String?>, ctx: HttpContext, @Param("s") s: St
 //    }
 //}
 
-@StaticAssets("c", "a")
-val c: ByteArray by staticAssets
-
-@StaticAssets("d", "a")
-val d: ByteArray by staticAssets
+//@StaticAssets("c", "a")
+//val c: ByteArray by staticAssets
+//
+//@StaticAssets("d", "a")
+//val d: ByteArray by staticAssets

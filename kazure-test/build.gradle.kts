@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.ksp)
-    id("kazure") version "1.2.2-2.2.21"
+    id("kazure") version "1.2.3-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
 }
 
@@ -19,6 +19,10 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.set(listOf("-Xcontext-parameters"))
     }
+}
+
+kazure {
+    listingResources = true
 }
 
 //tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

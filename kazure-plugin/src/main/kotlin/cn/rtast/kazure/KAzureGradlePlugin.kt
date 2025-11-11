@@ -11,6 +11,7 @@ package cn.rtast.kazure
 import kazure.BuildConfig
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
@@ -19,14 +20,15 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     private fun registerTasks(project: Project) {
-        val config = project.extensions.getByType(KAzureExtension::class.java)
-        if (config.listingResources.get()) {
-            val generateResourceTask = project.tasks.register("generateResources", ListingResourcesTask::class.java) {
-                it.group = "kazure"
-            }
-            project.tasks.named("azureFunctionsPackage").configure {
-                it.dependsOn(generateResourceTask.get().name)
-            }
+        val generateResourceTask = project.tasks.register("generateResources", ListingResourcesTask::class.java) {
+            it.group = "kazure"
+        }
+        project.tasks.named("azureFunctionsPackage").configure {
+            it.dependsOn(generateResourceTask.get().name)
+        }
+        val outputDir = project.layout.buildDirectory.dir("generated/kotlin/kazure")
+        project.extensions.configure(KotlinProjectExtension::class.java) {
+            it.sourceSets.getByName("main").kotlin.srcDir(outputDir)
         }
     }
 

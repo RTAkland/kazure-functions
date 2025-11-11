@@ -18,8 +18,12 @@ abstract class KAzureExtension {
     @get:Input
     abstract val excludeFiles: ListProperty<String>
 
+    @get:Input
+    abstract val resourceRoutingPrefix: Property<String>
+
     init {
         listingResources.convention(false)
         excludeFiles.convention(mutableListOf())
+        resourceRoutingPrefix.convention("")
     }
 }
