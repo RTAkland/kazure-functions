@@ -104,7 +104,7 @@ class KAzureProcessor(
             }.arguments.first().value as KSType
             val providerLiteralType = when {
                 providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.BasicAuthorizationProvider") -> "Basic"
-                providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.BearerAuthorizationProvider") -> "Bearer"
+                providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.BearerAuthorizationProvider") -> "BearerToken"
                 else -> throw IllegalStateException("Unknown auth provider type ${providerKSType.declaration.qualifiedName?.asString()}")
             }
             val firstParamName = func.parameters.first().name!!.asString()

@@ -27,6 +27,10 @@ subprojects {
         explicitApi()
     }
 
+    java {
+        withSourcesJar()
+    }
+
     publishing {
         repositories {
             mavenLocal()
