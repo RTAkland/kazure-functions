@@ -20,6 +20,8 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.expressions.IrConstKind
+import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrVararg
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 
 class KAzureExtension(
@@ -28,20 +30,17 @@ class KAzureExtension(
 ) : IrGenerationExtension {
 
     @OptIn(DeprecatedForRemovalCompilerApi::class)
-    fun extractStringListFromProperty(irProperty: IrProperty): List<String>? {
-        val initializer = irProperty.backingField?.initializer?.expression ?: return null
-        if (initializer !is IrCall) return null
-        val stringList = mutableListOf<String>()
-        for (argIndex in 0 until initializer.valueArgumentsCount) {
-            val argExpr = initializer.getValueArgument(argIndex) ?: continue
-            if (argExpr is IrConst && argExpr.kind == IrConstKind.String) {
-                stringList.add(argExpr.value as String)
-            } else {
-                return null
-            }
+    fun extractStringListFromProperty(irProperty: IrProperty): List<String> {
+        val call = irProperty.backingField?.initializer?.expression as? IrCall
+            ?: error("Property ${irProperty.name} has no initializer or it's not a call expression")
+        val vararg = call.getValueArgument(0) as? IrVararg
+            ?: error("Property ${irProperty.name} initializer is not listOf(vararg)")
+        return vararg.elements.mapNotNull { element ->
+            val expr = element as? IrConst ?: return@mapNotNull null
+            expr.value as? String
         }
-        return stringList
     }
+
 
     override fun generate(
         moduleFragment: IrModuleFragment,
