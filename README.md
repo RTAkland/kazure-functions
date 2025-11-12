@@ -10,14 +10,13 @@ Read [docs](docs/README.md) for more information
 
 # Quickstart
 
-
 > The latest release is may not the latest version
 
 Kotlin versions and plugin version table
 
 | Kotlin   | KAzure         |
 |----------|----------------|
-| `2.2.21` | `1.2.5-2.2.21` |
+| `2.2.21` | `1.2.6-2.2.21` |
 | `2.2.20` | `1.0.0-2.2.20` |
 
 ## Configure
@@ -97,7 +96,7 @@ local.settings.json
 {
   "IsEncrypted": false,
   "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "java",
+    "FUNCTIONS_WORKER_RUNTIME": "java"
   }
 }
 ```

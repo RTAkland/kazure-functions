@@ -12,6 +12,45 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import java.util.*
 
+fun getMimeType(filename: String): String {
+    val ext = filename.substringAfterLast('.', "").lowercase()
+    return when (ext) {
+        "html", "htm" -> "text/html; charset=utf-8"
+        "css" -> "text/css; charset=utf-8"
+        "js" -> "application/javascript; charset=utf-8"
+        "json" -> "application/json; charset=utf-8"
+        "xml" -> "application/xml; charset=utf-8"
+        "svg" -> "image/svg+xml; charset=utf-8"
+        "png" -> "image/png"
+        "jpg", "jpeg" -> "image/jpeg"
+        "gif" -> "image/gif"
+        "webp" -> "image/webp"
+        "ico" -> "image/x-icon"
+        "bmp" -> "image/bmp"
+        "avif" -> "image/avif"
+        "mp3" -> "audio/mpeg"
+        "wav" -> "audio/wav"
+        "ogg" -> "audio/ogg"
+        "mp4" -> "video/mp4"
+        "webm" -> "video/webm"
+        "pdf" -> "application/pdf"
+        "zip" -> "application/zip"
+        "gz" -> "application/gzip"
+        "tar" -> "application/x-tar"
+        "rar" -> "application/vnd.rar"
+        "7z" -> "application/x-7z-compressed"
+        "ttf" -> "font/ttf"
+        "otf" -> "font/otf"
+        "woff" -> "font/woff"
+        "woff2" -> "font/woff2"
+        "txt" -> "text/plain; charset=utf-8"
+        "csv" -> "text/csv; charset=utf-8"
+        "md" -> "text/markdown; charset=utf-8"
+        "wasm" -> "application/wasm"
+        else -> "application/octet-stream"
+    }
+}
+
 class StaticRoutingProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
@@ -49,7 +88,8 @@ class StaticRoutingProcessor(
                 |public fun $funcName
                 |(req: com.microsoft.azure.functions.HttpRequestMessage<kotlin.Any?>,
                 |ctx: com.microsoft.azure.functions.ExecutionContext): com.microsoft.azure.functions.HttpResponseMessage
-                |= req.respondBytes(cn.rtast.kazure.resources.Resources.readBytes("$res"))
+                |= req.respondBytes(cn.rtast.kazure.resources.Resources.readBytes("$res"),
+                |headers = mapOf("Content-Type" to "${getMimeType(res)}"))
                 """.trimMargin()
             fileContent.appendLine(functionBody)
         }
