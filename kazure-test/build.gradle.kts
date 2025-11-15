@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     alias(libs.plugins.ksp)
-    id("kazure") version "1.2.6-2.2.21"
+    id("kazure") version "1.2.8-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
 }
 

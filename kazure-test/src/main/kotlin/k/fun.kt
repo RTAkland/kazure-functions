@@ -13,7 +13,9 @@ import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.Param
 import cn.rtast.kazure.auth.AuthConsumer
 import cn.rtast.kazure.auth.credentials.BasicCredential
+import cn.rtast.kazure.resources.StaticAssets
 import cn.rtast.kazure.resources.resources
+import cn.rtast.kazure.resources.staticAssets
 import cn.rtast.kazure.response.respondText
 import cn.rtast.kazure.trigger.HttpRouting
 
@@ -32,33 +34,33 @@ import cn.rtast.kazure.trigger.HttpRouting
 //    }
 //}
 //
-
-val a: String by resources
-
-val testContent: String by resources("test/test-content.txt")
-
+//
+//val a: String by resources
+//
+//val testContent: String by resources("test/test-content.txt")
+//
+////context(cred: BasicCredential)
+//@HttpRouting("hello")
+////@AuthConsumer(Basic1AuthProvider::class)
+//fun index(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
+////    return req.respondText("Hello" + cred.username + " at $s")
+//    return req.respondText("$a|$testContent")
+//}
+//
 //context(cred: BasicCredential)
-@HttpRouting("hello")
+//@HttpRouting("hello/auth/{s}")
 //@AuthConsumer(Basic1AuthProvider::class)
-fun index(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
+//fun indexWithAuth(req: HttpRequest<String?>, ctx: HttpContext, @Param("s") s: String): HttpResponse {
 //    return req.respondText("Hello" + cred.username + " at $s")
-    return req.respondText("$a|$testContent")
-}
-
-context(cred: BasicCredential)
-@HttpRouting("hello/auth/{s}")
-@AuthConsumer(Basic1AuthProvider::class)
-fun indexWithAuth(req: HttpRequest<String?>, ctx: HttpContext, @Param("s") s: String): HttpResponse {
-    return req.respondText("Hello" + cred.username + " at $s")
-}
-
+//}
+//
 context(cred: BasicCredential)
 @HttpRouting("hello/auth2")
 @AuthConsumer(Basic1AuthProvider::class)
 fun indexWithAuth1(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
     return req.respondText("Hello" + cred.username)
 }
-
+//
 context(cred: BasicCredential)
 @HttpRouting("hello/auth3")
 @AuthConsumer(Basic1AuthProvider::class)

@@ -11,6 +11,7 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
+import java.util.UUID
 
 
 class KAzureProcessor(
@@ -131,7 +132,7 @@ class KAzureProcessor(
         )
         file.write(fileSpec.toString().toByteArray())
         val initializerCode = CodeBlock.builder()
-            .add("listOf(")
+            .add("listOf(\"${UUID.randomUUID().toString().replace("-", "")}\", \"${UUID.randomUUID().toString().replace("-", "")}\",")
             .apply {
                 processedOriginFunctionsList.forEachIndexed { index, item ->
                     if (index > 0) add(", ")

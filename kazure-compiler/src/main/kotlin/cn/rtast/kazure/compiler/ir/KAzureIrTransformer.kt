@@ -73,8 +73,7 @@ class KAzureIrTransformer(
     ///////////////////////////////////////////////////////
 
     fun handleHttpFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        if (func.hasAnnotation(KspTaggedRoutingFqName) || processedFuncList.any { func.fqNameWhenAvailable?.asString() == it }) return
-        messageCollector.log(func.name.asString())
+        if (processedFuncList.any { func.fqNameWhenAvailable?.asString() == it }) return
         addFunctionNameToFunction(pluginContext, func, func.name.asString())
         val path = (annotation.getParameterValue("path") as IrConstImpl).value as String
         val methodsValue = annotation.getParameterValue("methods")

@@ -10,3 +10,7 @@ publishing {
         }
     }
 }
+
+dependencies {
+    testImplementation("com.azure:azure-messaging-webpubsub-client:1.0.0-beta.1")
+}
