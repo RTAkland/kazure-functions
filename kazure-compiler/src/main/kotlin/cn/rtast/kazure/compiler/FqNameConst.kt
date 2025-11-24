@@ -7,7 +7,7 @@
 
 package cn.rtast.kazure.compiler
 
-import cn.rtast.kazure.compiler.util.fqName
+import cn.rtast.kazure.compiler.util.ir.fqName
 
 
 val FunctionNameFqName = "com.microsoft.azure.functions.annotation.FunctionName".fqName
@@ -55,28 +55,9 @@ val AuthorizationLevelFqName = "com.microsoft.azure.functions.annotation.Authori
 val HttpMethodFqName = "com.microsoft.azure.functions.HttpMethod".fqName
 val CardinalityFqName = "com.microsoft.azure.functions.annotation.Cardinality".fqName
 
-val AzureFunctionFqName = "cn.rtast.kazure.functions.AzureFunction".fqName
-val HttpAzureFunctionFqName = "cn.rtast.kazure.functions.HttpAzureFunction".fqName
-val EventHubAzureFunctionFqName = "cn.rtast.kazure.functions.EventHubAzureFunction".fqName
-val BlobAzureFunctionFqName = "cn.rtast.kazure.functions.BlobAzureFunction".fqName
-val QueueAzureFunctionFqName = "cn.rtast.kazure.functions.QueueAzureFunction".fqName
-val TimerAzureFunctionFqName = "cn.rtast.kazure.functions.TimerAzureFunction".fqName
-
-val HttpRoutingFqName = "cn.rtast.kazure.trigger.HttpRouting".fqName
-val EventHubRoutingFqName = "cn.rtast.kazure.trigger.EventHubRouting".fqName
-val BlobRoutingFqName = "cn.rtast.kazure.trigger.BlobRouting".fqName
-val QueueRoutingFqName = "cn.rtast.kazure.trigger.QueueRouting".fqName
-val TimerRoutingFqName = "cn.rtast.kazure.trigger.TimerRouting".fqName
-
-val AuthConsumerFqName = "cn.rtast.kazure.auth.AuthConsumer".fqName
-
-val AuthorizationConfigureFqName = "cn.rtast.kazure.auth.provider.AuthorizationConfigure".fqName
-val BasicAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.BasicAuthorizationProvider".fqName
-val BearerAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.BearerAuthorizationProvider".fqName
-val JwtAuthorizationProviderFqName = "cn.rtast.kazure.auth.provider.JwtAuthorizationProvider".fqName
-
-val BasicCredentialFqName = "cn.rtast.kazure.auth.credentials.BasicCredential".fqName
-val BearerCredentialFqName = "cn.rtast.kazure.auth.credentials.BearerCredential".fqName
-val JwtCredentialFqName = "cn.rtast.kazure.auth.credentials.JwtCredential".fqName
-
-val KspTaggedRoutingFqName = "cn.rtast.kazure.trigger.internal.KspTaggedRouting".fqName
+val ResponseMessageFqName = "com.microsoft.azure.functions.HttpResponseMessage".fqName
+val BindingNameFqName = "com.microsoft.azure.functions.annotation.BindingName".fqName
+val HttpRequestFqName = "com.microsoft.azure.functions.HttpRequestMessage".fqName
+val ExecutionContextFqName = "com.microsoft.azure.functions.ExecutionContext".fqName
+val HttpRoutingContextFqName = "cn.rtast.kazure.v2.HttpRoutingContext".fqName
+val RunBlockingFqName = "kotlinx.coroutines.runBlocking".fqName

@@ -4,8 +4,6 @@
  * Date: 11/8/25
  */
 
-@file:Suppress("unused")
-
 package cn.rtast.kazure
 
 import kazure.BuildConfig
@@ -46,8 +44,8 @@ class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
         target.pluginManager.apply("com.microsoft.azure.azurefunctions")
         target.pluginManager.apply("com.google.devtools.ksp")
         target.dependencies.add("ksp", "kazure:kazure-processor:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
-        registerExtension(target)
-        registerTasks(target)
+//        registerExtension(target)
+//        registerTasks(target)
     }
 
     override fun getCompilerPluginId(): String = BuildConfig.KOTLIN_PLUGIN_ID

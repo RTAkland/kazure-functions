@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     alias(libs.plugins.ksp)
-    id("kazure") version "1.2.8-2.2.21"
+    id("kazure") version "2.0.0-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
 }
 
@@ -20,11 +20,11 @@ kotlin {
     }
 }
 
-kazure {
-    listingResources = true
-    excludeFiles.addAll("test/sensitive.txt")
-    resourceRoutingPrefix = "test/"
-}
+//kazure {
+//    listingResources = true
+//    excludeFiles.addAll("test/sensitive.txt")
+//    resourceRoutingPrefix = "test/"
+//}
 
 //tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
 //    destinationDirectory.set(file("$buildDir/classes/java/main"))

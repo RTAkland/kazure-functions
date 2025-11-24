@@ -1,0 +1,12 @@
+/*
+ * Copyright © 2025 RTAkland
+ * Author: RTAkland
+ * Date: 11/24/25
+ */
+
+
+package cn.rtast.kazure.v2.routing
+
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.SOURCE)
+public annotation class HttpRouting
