@@ -75,19 +75,10 @@ public fun <T> HttpRequest<T>.respondResource(
  */
 public fun <T> HttpRequest<T>.respondRedirect(
     url: String,
-    status: HttpStatus = HttpStatus.FOUND,
-    headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status)
-    .body("Redirecting").header("Location", url).build()
-
-/**
- * Respond a redirect
- */
-public fun <T> HttpRequest<T>.respondRedirect(
-    url: String,
     redirectType: RedirectType = RedirectType.FOUND,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = respondRedirect(url, redirectType.httpStatus, headers)
+): HttpResponse = this.builder(headers, redirectType.httpStatus)
+    .body("Redirecting").header("Location", url).build()
 
 /**
  * Respond any type content
