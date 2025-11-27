@@ -6,7 +6,7 @@ shadow = "8.1.1"
 build-config = "5.6.5"
 auto-service = "1.1.1"
 azure-functions-java-library = "3.2.2"
-gson = "2.13.2"
+kotlinx-serialization = "1.8.1"
 
 [libraries]
 kotlin-compiler = { module = "org.jetbrains.kotlin:kotlin-compiler", version.ref = "kotlin" }
@@ -16,7 +16,9 @@ auto-service = { module = "com.google.auto.service:auto-service", version.ref = 
 azure-functions-java-library = { module = "com.microsoft.azure.functions:azure-functions-java-library", version.ref = "azure-functions-java-library" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-symbol-processor-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+
 
 [bundles]
 
@@ -29,3 +31,4 @@ build-config = { id = "com.github.gmazzo.buildconfig", version.ref = "build-conf
 maven-publish = { id = "maven-publish" }
 kapt = { id = "org.jetbrains.kotlin.kapt" }
 java-gradle-plugin = { id = "java-gradle-plugin" }
+kotlinx-serilization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

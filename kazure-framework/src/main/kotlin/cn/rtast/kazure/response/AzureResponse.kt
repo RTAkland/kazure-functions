@@ -83,8 +83,8 @@ public fun <T> HttpRequest<T>.respondRedirect(
 /**
  * Respond any type content
  */
-public fun <T, R> HttpRequest<T>.respond(
-    body: R? = null,
+public fun <T> HttpRequest<T>.respond(
+    body: Any? = null,
     status: HttpStatus,
     headers: Map<String, String> = mapOf(),
 ): HttpResponse = this.builder(headers, status).body(body ?: status.name).build()

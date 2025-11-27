@@ -5,25 +5,28 @@
  */
 
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package cn.rtast.kazure.util
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 
-public val kazureInternalGsonDoNotUseThis: Gson = GsonBuilder()
-    .setPrettyPrinting()
-    .disableHtmlEscaping()
-    .create()
+public val kazureInternalJson: Json = Json {
+    prettyPrint = true
+    ignoreUnknownKeys = true
+    explicitNulls = false
+    classDiscriminator = "_json_type_"
+    encodeDefaults = true
+    coerceInputValues = true
+    decodeEnumsCaseInsensitive = true
+    isLenient = true
+}
 
-public fun Any.toJson(): String {
-    return kazureInternalGsonDoNotUseThis.toJson(this)
+public inline fun <reified T> T.toJson(): String {
+    return kazureInternalJson.encodeToString(this)
 }
 
 public inline fun <reified T> String.fromJson(): T {
-    return kazureInternalGsonDoNotUseThis.fromJson(this, T::class.java)
-}
-
-public inline fun <reified T> String.fromArrayJson(): T {
-    return kazureInternalGsonDoNotUseThis.fromJson(this, object : TypeToken<T>() {}.type)
+    return kazureInternalJson.decodeFromString<T>(this)
 }
