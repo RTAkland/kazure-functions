@@ -17,7 +17,9 @@ import java.io.InputStream
 
 private typealias Headers = Map<String, String>
 
-private fun <T> HttpRequest<T>.builder(headers: Headers, status: HttpStatus): HttpResponseBuilder {
+
+@Suppress("FunctionName")
+public fun <T> HttpRequest<T>.__builder(headers: Headers, status: HttpStatus): HttpResponseBuilder {
     var builder = this.createResponseBuilder(status)
     for ((k, v) in headers) {
         builder = builder.header(k, v)
@@ -32,7 +34,7 @@ public fun <T> HttpRequest<T>.respondText(
     body: String,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status).body(body).build()
+): HttpResponse = this.__builder(headers, status).body(body).build()
 
 /**
  * Respond a bytes content
@@ -41,7 +43,7 @@ public fun <T> HttpRequest<T>.respondBytes(
     bytes: ByteArray,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status).body(bytes).build()
+): HttpResponse = this.__builder(headers, status).body(bytes).build()
 
 /**
  * Respond an [InputStream]}
@@ -77,7 +79,7 @@ public fun <T> HttpRequest<T>.respondRedirect(
     url: String,
     redirectType: RedirectType = RedirectType.FOUND,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, redirectType.httpStatus)
+): HttpResponse = this.__builder(headers, redirectType.httpStatus)
     .body("Redirecting").header("Location", url).build()
 
 /**
@@ -87,14 +89,14 @@ public fun <T> HttpRequest<T>.respond(
     body: Any? = null,
     status: HttpStatus,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status).body(body ?: status.name).build()
+): HttpResponse = this.__builder(headers, status).body(body ?: status.name).build()
 
 /**
  * Respond json content
  * Auto deserialization to json text
  */
-public fun <T, R> HttpRequest<T>.respondJson(
+public inline fun <T, reified R> HttpRequest<T>.respondJson(
     data: R,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.builder(headers, status).body(data!!.toJson()).build()
+): HttpResponse = this.__builder(headers, status).body(data.toJson()).build()

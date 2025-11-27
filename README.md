@@ -14,10 +14,10 @@ Read [docs](docs/README.md) for more information
 
 Kotlin versions and plugin version table
 
-| Kotlin   | KAzure         |
-|----------|----------------|
-| `2.2.21` | `1.2.8-2.2.21` |
-| `2.2.20` | `1.0.0-2.2.20` |
+| Kotlin   | KAzure          |
+|----------|-----------------|
+| `2.2.21` | `1.2.11-2.2.21` |
+| `2.2.20` | `1.0.0-2.2.20`  |
 
 ## Configure
 
