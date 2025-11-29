@@ -15,7 +15,3 @@ publishing {
         }
     }
 }
-
-dependencies {
-
-}

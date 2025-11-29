@@ -18,6 +18,7 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
+        maven("https://repo.maven.rtast.cn/releases")
     }
 }
 

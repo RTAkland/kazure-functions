@@ -19,7 +19,6 @@ ksp-symbol-processor-api = { module = "com.google.devtools.ksp:symbol-processing
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 
-
 [bundles]
 
 [plugins]
