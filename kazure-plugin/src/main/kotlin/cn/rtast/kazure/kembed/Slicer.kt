@@ -47,7 +47,7 @@ fun List<File>.generateIndex(
             val baseName = file.name.sanitize()
             val slices = file.slice(chunkSize, compression)
             val sliceVarNames = slices.toKtFiles(output, packageName, baseName, visibility)
-            indexContent.appendLine("    \"${file.relativeTo(inputDir).path}\" to Chunk(")
+            indexContent.appendLine("    \"${file.relativeTo(inputDir).path.replace("\\", "/")}\" to Chunk(")
             indexContent.appendLine("        name = \"${file.name}\",")
             indexContent.appendLine("        chunks = listOf(")
             sliceVarNames.forEach { sliceName ->

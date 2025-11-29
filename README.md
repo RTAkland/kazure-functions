@@ -14,9 +14,9 @@ Read [docs](docs/README.md) for more information
 
 Kotlin versions and plugin version table
 
-| Kotlin   | KAzure          |
-|----------|-----------------|
-| `2.2.21` | `1.2.12-2.2.21` |
+| Kotlin   | KAzure         |
+|----------|----------------|
+| `2.2.21` | `1.3.1-2.2.21` |
 
 ## Configure
 
