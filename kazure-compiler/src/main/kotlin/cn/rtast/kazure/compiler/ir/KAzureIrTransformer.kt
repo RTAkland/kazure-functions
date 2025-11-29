@@ -184,7 +184,7 @@ class KAzureIrTransformer(
         // add @HttpTrigger into request param
         requestParam.addAnnotation(pluginContext, HttpTriggerFqName) {
             putValueArgument(0, "req".irString(irBuiltIns))
-            putValueArgument(2, path.irString(irBuiltIns))
+            putValueArgument(2, path.removePrefix("/").irString(irBuiltIns))
             putValueArgument(3, methodsValue)
             putValueArgument(4, authLevelValue)
             requestParam.annotations += this
@@ -248,20 +248,6 @@ class KAzureIrTransformer(
             putValueArgument(3, connection)
             messageParam.annotations += this
         }
-    }
-
-    private fun IrSimpleFunction.findAnnotatedRouting(): IrConstructorCall? {
-        val http = this.getAnnotation(HttpRoutingFqName)
-        if (http != null) return http
-        val blob = this.getAnnotation(BlobRoutingFqName)
-        if (blob != null) return blob
-        val eventHub = this.getAnnotation(EventHubRoutingFqName)
-        if (eventHub != null) return eventHub
-        val timer = this.getAnnotation(TimerRoutingFqName)
-        if (timer != null) return timer
-        val queue = this.getAnnotation(QueueRoutingFqName)
-        if (queue != null) return queue
-        return null
     }
 
     ///////////////////////////////////////

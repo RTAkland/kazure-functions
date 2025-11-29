@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.build.config)
     alias(libs.plugins.shadow)
@@ -25,11 +27,15 @@ subprojects {
 
     kotlin {
         explicitApi()
+        compilerOptions.jvmTarget = JvmTarget.JVM_11
     }
 
-    java {
-        withSourcesJar()
+    tasks.compileJava {
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
     }
+
+    java { withSourcesJar() }
 
     publishing {
         repositories {

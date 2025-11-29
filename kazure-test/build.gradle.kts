@@ -2,8 +2,12 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     alias(libs.plugins.ksp)
-    id("kazure") version "1.2.8-2.2.21"
+    id("kazure") version "1.2.12-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
+}
+
+repositories {
+    mavenLocal()
 }
 
 azurefunctions {
@@ -21,7 +25,7 @@ kotlin {
 }
 
 kazure {
-    listingResources = true
+    listingResources = false
     excludeFiles.addAll("test/sensitive.txt")
     resourceRoutingPrefix = "test/"
 }
@@ -48,5 +52,6 @@ tasks.register("killAzureProcesses") {
 }
 
 tasks.named("azureFunctionsRun") {
-    finalizedBy("killAzureProcesses")
+    val enableKillAzureProcess = System.getenv("ENABLE_KILL_AZURE_PROCESS") != null
+    if (enableKillAzureProcess) finalizedBy("killAzureProcesses") else println("Killing azure core tools is disabled")
 }

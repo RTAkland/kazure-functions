@@ -91,7 +91,7 @@ class KAzureProcessor(
                 func.annotations.find { it.annotationType.resolve().declaration.qualifiedName?.asString() == "cn.rtast.kazure.trigger.HttpRouting" }!!
             val routingValues = resolveAnnotationParametersWithDefaults(originHttpRoutingAnnotation)
             val httpRoutingAnnotationSpec = AnnotationSpec.builder(ClassName("cn.rtast.kazure.trigger", "HttpRouting"))
-                .addMember("path = %S", routingValues["path"]!!)
+                .addMember("path = %S", routingValues["path"]!!.toString().removePrefix("/"))
                 .addMember("methods = %L", routingValues["methods"]!!)
                 .addMember("authLevel = %L", routingValues["authLevel"]!!)
                 .build()
