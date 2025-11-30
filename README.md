@@ -16,7 +16,7 @@ Kotlin versions and plugin version table
 
 | Kotlin   | KAzure         |
 |----------|----------------|
-| `2.2.21` | `1.3.1-2.2.21` |
+| `2.2.21` | `1.3.2-2.2.21` |
 
 ## Configure
 

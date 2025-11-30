@@ -10,7 +10,6 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.HttpResponseBuilder
 import cn.rtast.kazure.HttpStatus
-import cn.rtast.kazure.resources.Resources
 import cn.rtast.kazure.util.toJson
 import java.io.File
 import java.io.InputStream
@@ -64,15 +63,6 @@ public fun <T> HttpRequest<T>.respondFile(
 ): HttpResponse = respondBytes(file.readBytes(), status, headers)
 
 /**
- * Respond resource from /resources/ folder
- */
-public fun <T> HttpRequest<T>.respondResource(
-    path: String,
-    status: HttpStatus = HttpStatus.OK,
-    headers: Map<String, String> = mapOf(),
-): HttpResponse = respondBytes(Resources.readBytes(path), status, headers)
-
-/**
  * Respond a redirect
  */
 public fun <T> HttpRequest<T>.respondRedirect(
@@ -89,7 +79,8 @@ public fun <T> HttpRequest<T>.respond(
     body: Any? = null,
     status: HttpStatus,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.__builder(headers, status).body(body ?: status.name).build()
+): HttpResponse = if (body != null) this.__builder(headers, status).body(body).build()
+else this.__builder(headers, status).build()
 
 /**
  * Respond json content
