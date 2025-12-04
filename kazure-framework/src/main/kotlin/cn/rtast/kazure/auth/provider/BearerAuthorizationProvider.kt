@@ -15,6 +15,7 @@ import cn.rtast.kazure.auth.credentials.BearerCredential
  * Bearer token authorization provider
  * Any string in authorization header
  */
-public interface BearerAuthorizationProvider : AuthorizationConfigure<BearerCredential> {
-    override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BearerCredential): Boolean
+public abstract class BearerAuthorizationProvider : AuthorizationConfigure<BearerCredential> {
+    final override val apn: String = "BearerToken"
+    abstract override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BearerCredential): Boolean
 }

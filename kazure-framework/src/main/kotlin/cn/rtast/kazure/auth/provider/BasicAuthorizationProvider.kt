@@ -15,6 +15,7 @@ import cn.rtast.kazure.auth.credentials.BasicCredential
  * Basic authorization provider
  * Usually struct `<username>:<password>`
  */
-public interface BasicAuthorizationProvider : AuthorizationConfigure<BasicCredential> {
-    override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential): Boolean
+public abstract class BasicAuthorizationProvider : AuthorizationConfigure<BasicCredential> {
+    final override val apn: String = "Basic"
+    abstract override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential): Boolean
 }
