@@ -7,19 +7,12 @@
 
 package cn.rtast.kazure.next
 
-import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpMethod
-import cn.rtast.kazure.HttpRequest
-import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.auth.credentials.BaseCredential
 import cn.rtast.kazure.auth.provider.AuthorizationConfigure
-import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
-import cn.rtast.kazure.auth.provider.BearerAuthorizationProvider
-import cn.rtast.kazure.auth.provider.func.__getBasicCredential
-import cn.rtast.kazure.auth.provider.func.__getBearerTokenCredential
-import cn.rtast.kazure.auth.provider.func.__unAuthorized
 
-public data class RegisteredRoute<T>(
+@ConsistentCopyVisibility
+public data class RegisteredRouteSpec<T> internal constructor(
     val route: String,
     val methods: List<HttpMethod>,
     val params: MutableSet<String>,
@@ -45,3 +38,4 @@ public data class RegisteredRoute<T>(
  *         return handler.handle(req, ctx, ...)
  *     }
  */
+

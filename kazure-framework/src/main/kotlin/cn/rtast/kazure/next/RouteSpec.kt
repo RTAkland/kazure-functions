@@ -16,7 +16,7 @@ import cn.rtast.kazure.auth.provider.AuthorizationConfigure
  * The Router object, contains a function metadata
  * for generating azure functions
  */
-public class Router(
+public class RouteSpec(
     public val methods: List<HttpMethod>,
     public var route: String? = null,
     public val params: MutableSet<String> = mutableSetOf(),
@@ -24,22 +24,22 @@ public class Router(
 )
 
 /**
- * create a [Router]
+ * create a [RouteSpec]
  */
-public infix fun HttpMethod.and(other: HttpMethod): Router =
-    Router(listOf(this, other))
+public infix fun HttpMethod.and(other: HttpMethod): RouteSpec =
+    RouteSpec(listOf(this, other))
 
 
 /**
- * create a [Router] with multiple [HttpMethod]
+ * create a [RouteSpec] with multiple [HttpMethod]
  */
-public infix fun Router.and(other: HttpMethod): Router =
-    Router(this.methods + other)
+public infix fun RouteSpec.and(other: HttpMethod): RouteSpec =
+    RouteSpec(this.methods + other)
 
 /**
  * specify route path
  */
-public infix fun Router.at(route: String): Router {
+public infix fun RouteSpec.at(route: String): RouteSpec {
     this.route = route
     return this
 }
@@ -47,7 +47,7 @@ public infix fun Router.at(route: String): Router {
 /**
  * set param
  */
-public infix fun Router.with(param: String): Router {
+public infix fun RouteSpec.with(param: String): RouteSpec {
     this.params += param
     return this
 }
@@ -55,7 +55,7 @@ public infix fun Router.with(param: String): Router {
 /**
  * set params at a time
  */
-public infix fun Router.with(params: Set<String>): Router {
+public infix fun RouteSpec.with(params: Set<String>): RouteSpec {
     this.params += params
     return this
 }
@@ -63,7 +63,7 @@ public infix fun Router.with(params: Set<String>): Router {
 /**
  * set auth basic provider
  */
-public infix fun Router.requiring(auth: AuthorizationConfigure<out BaseCredential>): Router {
+public infix fun RouteSpec.requiring(auth: AuthorizationConfigure<out BaseCredential>): RouteSpec {
     this.authProvider = auth
     return this
 }
@@ -71,7 +71,7 @@ public infix fun Router.requiring(auth: AuthorizationConfigure<out BaseCredentia
 /**
  * set routing handler
  */
-public infix fun <T> Router.handledBy(handler: RequestHandler<T>): RegisteredRoute<T> = RegisteredRoute(
+public infix fun <T> RouteSpec.handledBy(handler: RequestHandler<T>): RegisteredRouteSpec<T> = RegisteredRouteSpec(
     route?.removePrefix("/") ?: error("Route must exists"),
     methods, params, authProvider, handler
 )

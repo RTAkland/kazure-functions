@@ -14,5 +14,5 @@ public interface Application {
     /**
      * logic routes manager
      */
-    public val routes: MutableList<RegisteredRoute<*>>
+    public val routes: MutableList<RegisteredRouteSpec<*>>
 }

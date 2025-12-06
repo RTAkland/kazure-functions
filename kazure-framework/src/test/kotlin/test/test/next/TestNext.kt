@@ -15,6 +15,9 @@ import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 import cn.rtast.kazure.next.*
 import cn.rtast.kazure.next.annotations.Routing
 import cn.rtast.kazure.response.respondText
+import com.microsoft.azure.functions.annotation.AuthorizationLevel
+import com.microsoft.azure.functions.annotation.FunctionName
+import com.microsoft.azure.functions.annotation.HttpTrigger
 
 
 object Auth : BasicAuthorizationProvider {
@@ -26,6 +29,7 @@ object Auth : BasicAuthorizationProvider {
 
 }
 
+
 @Routing
 val testRouting = (HttpMethod.POST and HttpMethod.GET) at
         "/api/" requiring Auth with setOf("path", "name") handledBy
@@ -33,7 +37,7 @@ val testRouting = (HttpMethod.POST and HttpMethod.GET) at
             req.respondText("")
         }
 
-fun main() {
+fun s() {
     (HttpMethod.POST and HttpMethod.GET) at "/api/" requiring Auth with setOf("path") handledBy RequestHandler<String> { req, ctx, params ->
         req.respondText("")
     }
