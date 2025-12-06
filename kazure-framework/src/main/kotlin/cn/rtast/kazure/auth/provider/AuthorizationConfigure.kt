@@ -13,6 +13,6 @@ import cn.rtast.kazure.HttpRequest
 /**
  * Base authorization provider
  */
-public interface AuthorizationConfigure<C> {
+public sealed interface AuthorizationConfigure<C> {
     public fun verify(request: HttpRequest<*>, context: HttpContext, credential: C): Boolean
 }

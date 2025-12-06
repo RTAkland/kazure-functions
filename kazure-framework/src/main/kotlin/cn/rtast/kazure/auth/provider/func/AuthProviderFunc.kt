@@ -12,7 +12,6 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.auth.credentials.BearerCredential
-import cn.rtast.kazure.auth.credentials.JwtCredential
 import cn.rtast.kazure.response.respond
 import com.microsoft.azure.functions.HttpStatus
 import kotlin.io.encoding.Base64
@@ -37,15 +36,6 @@ public fun <T> __getBasicCredential(req: HttpRequest<T>): BasicCredential? {
     val username = decoded.take(colonIndex)
     val password = decoded.substring(colonIndex + 1)
     return BasicCredential(username, password)
-}
-
-public fun <T> __getJwtTokenCredential(req: HttpRequest<T>): JwtCredential? {
-    val authorizationHeader = req.headers["authorization"] ?: return null
-    val prefix = "Bearer "
-    if (!authorizationHeader.startsWith(prefix, ignoreCase = true)) return null
-    val token = authorizationHeader.removePrefix(prefix).trim()
-    if (token.isEmpty()) return null
-    return JwtCredential(token)
 }
 
 public fun <T> __getTokenCredential(req: HttpRequest<T>, scheme: String): String? {
