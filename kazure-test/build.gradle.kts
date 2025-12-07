@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
-    alias(libs.plugins.ksp)
-    id("kazure") version "1.3.0-2.2.21"
+    alias(libs.plugins.kotlinx.serilization)
+    id("kazure.next") version "2.0.0-2.2.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
 }
 
@@ -24,7 +24,7 @@ kotlin {
     }
 }
 
-kazure {
+kazureNext {
     listingResources = false
     excludeFiles.addAll("test/sensitive.txt")
     resourceRoutingPrefix = "test/"

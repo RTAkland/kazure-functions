@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kapt)
@@ -45,4 +46,22 @@ publishing {
 
 kotlin {
     explicitApi = ExplicitApiMode.Disabled
+}
+
+tasks.compileJava {
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
+}
+
+tasks.compileKotlin {
+    compilerOptions.jvmTarget = JvmTarget.JVM_11
+}
+
+tasks.compileTestJava {
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
+}
+
+tasks.compileTestKotlin {
+    compilerOptions.jvmTarget = JvmTarget.JVM_11
 }

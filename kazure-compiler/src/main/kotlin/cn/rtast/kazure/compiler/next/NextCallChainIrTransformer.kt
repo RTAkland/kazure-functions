@@ -10,9 +10,11 @@
 package cn.rtast.kazure.compiler.next
 
 import cn.rtast.kazure.compiler.next.util.randomName
+import cn.rtast.kazure.compiler.next.util.removeAnnotations
 import cn.rtast.kazure.compiler.util.classId
 import cn.rtast.kazure.compiler.util.fqName
 import cn.rtast.kazure.compiler.util.irString
+import cn.rtast.kazure.compiler.util.isSubclassOf
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
@@ -54,6 +56,8 @@ class NextCallChainIrTransformer(
 
     companion object {
         val ROUTING_FQ_NAME = "cn.rtast.kazure.next.annotations.Routing".fqName
+        val BASIC_AUTH_PROVIDER_FQ_NAME = "cn.rtast.kazure.auth.provider.BasicAuthorizationProvider".fqName
+        val BEARER_AUTH_PROVIDER_FQ_NAME = "cn.rtast.kazure.auth.provider.BearerAuthorizationProvider".fqName
 
         val REQUEST_MESSAGE_FQ_NAME = "com.microsoft.azure.functions.HttpRequestMessage".fqName
         val EXECUTION_CONTEXT_FQ_NAME = "com.microsoft.azure.functions.ExecutionContext".fqName
@@ -68,6 +72,16 @@ class NextCallChainIrTransformer(
 
     private val irBuiltIns = pluginContext.irBuiltIns
 
+    private val getBasicCredFuncSymbol = pluginContext.referenceFunctions(
+        CallableId("cn.rtast.kazure.auth.provider.func".fqName, Name.identifier("__getBasicCredential"))
+    ).first()
+    private val getBearerCredFuncSymbol = pluginContext.referenceFunctions(
+        CallableId("cn.rtast.kazure.auth.provider.func".fqName, Name.identifier("__getBearerTokenCredential"))
+    ).first()
+    private val unauthorizedSimpleFuncSymbol = pluginContext.referenceFunctions(
+        CallableId("cn.rtast.kazure.auth.provider.func".fqName, Name.identifier("__unAuthorized"))
+    ).first()
+
     private val functionNameCls = pluginContext.referenceClass(FUNCTION_NAME_FQ_NAME.classId)!!
     private val requestMessageCls = pluginContext.referenceClass(REQUEST_MESSAGE_FQ_NAME.classId)!!
     private val executionContextCls = pluginContext.referenceClass(EXECUTION_CONTEXT_FQ_NAME.classId)!!
@@ -78,21 +92,19 @@ class NextCallChainIrTransformer(
     private val httpTriggerCls = pluginContext.referenceClass(HTTP_TRIGGER_FQ_NAME.classId)!!
     private val authorizationLevelCls = pluginContext.referenceClass(AUTHORIZATION_LEVEL_FQ_NAME.classId)!!
 
-    private val mapType = irBuiltIns.mapClass.typeWith(irBuiltIns.stringType, irBuiltIns.stringType)
     private val mapOfSymbol = pluginContext.referenceFunctions(
         CallableId("kotlin.collections".fqName, Name.identifier("mapOf"))
-    ).single { it.owner.parameters.size == 1 }
+    ).first { it.owner.parameters.size == 1 }
 
-    private val pairCls = pluginContext.referenceClass("kotlin.Pair".fqName.classId)!!
-    private val pairType = pairCls.defaultType
-    private val pairConstructor = pairCls
-        .constructors.single { it.owner.parameters.size == 2 }
+    private val pairCtor = pluginContext.referenceConstructors("kotlin.Pair".fqName.classId)
+        .first { it.owner.parameters.size == 2 }
+
 
     override fun visitPropertyNew(declaration: IrProperty): IrStatement {
         if (declaration.annotations.hasAnnotation(ROUTING_FQ_NAME)) {
-            val init = declaration.backingField!!.initializer!!.expression
-            val constructorCall = init as IrConstructorCall
-            val routeSpec = parseRouteSpec(constructorCall)
+//            val init = declaration.backingField!!.initializer!!.expression
+//            val constructorCall = init as IrCall
+//            val routeSpec = parseRouteSpec(constructorCall)
 
         }
         return super.visitPropertyNew(declaration)
@@ -144,9 +156,9 @@ class NextCallChainIrTransformer(
             arguments[4] = authLevelEnumValue
         }
         val paramsMap = mutableMapOf<String, IrValueParameter>()
-        spec.params.map { param ->
+        spec.params.map m@{ param ->
             val bindingNameCtor = bindingNameCls.constructors.first()
-            IrConstructorCallImpl.fromSymbolOwner(
+            val bindingNameAnnoCall = IrConstructorCallImpl.fromSymbolOwner(
                 UNDEFINED_OFFSET,
                 UNDEFINED_OFFSET,
                 bindingNameCls.defaultType,
@@ -154,9 +166,9 @@ class NextCallChainIrTransformer(
             ).apply { arguments[0] = param.irString(irBuiltIns) }
             val p = pluginContext.irFactory.createValueParameter(
                 UNDEFINED_OFFSET, UNDEFINED_OFFSET, IrDeclarationOrigin.DEFINED,
-                IrParameterKind.Regular, Name.identifier(param), bindingNameCls.defaultType,
+                IrParameterKind.Regular, Name.identifier(param), irBuiltIns.stringType,
                 false, IrValueParameterSymbolImpl(), null, isCrossinline = false, isNoinline = false, isHidden = false
-            )
+            ).apply p@{ this@p.annotations += bindingNameAnnoCall }
             paramsMap[param] = p
         }
 
@@ -210,38 +222,74 @@ class NextCallChainIrTransformer(
             symbol = IrSimpleFunctionSymbolImpl(),
             isTailrec = false, isSuspend = false, isOperator = false,
             isInfix = false, isExternal = false,
-        ).apply {
+        ).apply sf@{
             parameters = listOf(requestParameter, contextParameter, *paramsMap.values.toTypedArray())
             parent = irFile
 
-            // create body hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhard
-            val handlerType = spec.handlerExpression?.type
-            val handleFun = handlerType?.classOrNull?.owner
-                ?.functions
-                ?.first { it.name.asString() == "handle" }
-                ?.symbol
-            // remap fun signature path variable to map
-            body = DeclarationIrBuilder(pluginContext, this@apply.symbol).irBlockBody {
+            // set function name annotation
+            this@sf.annotations += functionNameAnnoCall
 
-                // param map block
-                if (handleFun != null) {
-                    +irReturn(irCall(handleFun).apply {
-                        dispatchReceiver = spec.handlerExpression
-                        arguments[0] = irGet(requestParameter)
-                        arguments[1] = irGet(contextParameter)
-//                        arguments[2] =  // params map
-                    })
+            // create body hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhard
+            val handlerType = spec.handlerExpression.type
+            val handleFun = handlerType.classOrNull!!.owner
+                .functions.first { it.name.asString() == "handle" }.symbol
+
+            // remap fun signature path variable to map
+            val mapBuilder = DeclarationIrBuilder(pluginContext, this@sf.symbol)
+            val paramsEntries = paramsMap.map { (k, v) ->
+                mapBuilder.irCall(pairCtor).apply {
+                    arguments[0] = mapBuilder.irString(k)
+                    arguments[1] = mapBuilder.irGet(v.removeAnnotations())
                 }
             }
+            val paramVararg = IrVarargImpl(
+                UNDEFINED_OFFSET, UNDEFINED_OFFSET, irBuiltIns.anyType,
+                irBuiltIns.anyType, paramsEntries
+            )
+            val paramMap = mapBuilder.irCall(mapOfSymbol).apply { arguments[0] = paramVararg }
+            body = DeclarationIrBuilder(pluginContext, this@sf.symbol).irBlockBody {
+                val callingHandlerCall = irCall(handleFun).apply {
+                    dispatchReceiver = spec.handlerExpression
+                    arguments[0] = irGet(requestParameter.removeAnnotations())
+                    arguments[1] = irGet(contextParameter)
+                    arguments[2] = paramMap
+                }
+                val unauthorizedCall = irCall(unauthorizedSimpleFuncSymbol).apply {
+                    arguments[0] = irGet(requestParameter.removeAnnotations())
+                }
 
-        }
-    }
+                // build and calling verify function
+                if (spec.authFqName == null) +irReturn(callingHandlerCall) else {
+                    val apClsSymbol = pluginContext.referenceClass(spec.authFqName.classId)!!
+                    val getCredFuncSymbol =
+                        if (apClsSymbol.owner.isSubclassOf(BASIC_AUTH_PROVIDER_FQ_NAME)) getBasicCredFuncSymbol
+                        else getBearerCredFuncSymbol
+                    val apCls = apClsSymbol.owner
+                    val apVerifyFun = apCls.functions.first {
+                        it.name.identifier == "verify"
+                    }
+                    val apInstance = irGetObject(apClsSymbol)
+                    val apVerifyFunCall = irCall(apVerifyFun.symbol).apply {
+                        dispatchReceiver = apInstance
+                        arguments[0] = irGet(requestParameter.removeAnnotations())
+                        arguments[1] = irGet(contextParameter)
+                        arguments[2] = irCall(getCredFuncSymbol)
+                    }
+                    // get verify result and go to if else branch,
+                    // if verify is success, then execute handler as generated function return value,
+                    // if verify failed, return __unauthorized as function return value
 
-    private fun IrBlockBodyBuilder.pair(key: String, value: IrExpression): IrExpression {
-        return irCall(pairConstructor).apply {
-            arguments[0] = key.irString(irBuiltIns)
-            arguments[1] = value
+                    val result = irIfThenElse(
+                        irBuiltIns.unitType,
+                        apVerifyFunCall,
+                        irBlock { +callingHandlerCall },  // success
+                        irBlock { +unauthorizedCall }  // failed
+                    )
+                    +irReturn(result)
+                }
+            }
         }
+        irFile.declarations += generatedFunction
     }
 
     private fun parseRouteSpec(constructorCall: IrConstructorCall): ParsedRouteSpec {
@@ -261,7 +309,7 @@ class NextCallChainIrTransformer(
         val authProviderFqName = (authProviderArg as IrGetObjectValue)
             .symbol.owner.fqNameWhenAvailable!!.asString()
 
-        val handlerArg = constructorCall.arguments[4]
+        val handlerArg = constructorCall.arguments[4]!!
         return ParsedRouteSpec(routeArg, methods, params, authProviderFqName, handlerArg)
     }
 }

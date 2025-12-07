@@ -10,6 +10,7 @@ package cn.rtast.kazure.next
 import cn.rtast.kazure.HttpMethod
 import cn.rtast.kazure.auth.credentials.BaseCredential
 import cn.rtast.kazure.auth.provider.AuthorizationConfigure
+import cn.rtast.kazure.next.executable.RouteCollector
 
 
 /**
@@ -37,11 +38,19 @@ public infix fun RouteSpec.and(other: HttpMethod): RouteSpec =
     RouteSpec(this.methods + other)
 
 /**
- * specify route path
+ * set route path
  */
 public infix fun RouteSpec.at(route: String): RouteSpec {
     this.route = route
     return this
+}
+
+/**
+ * set route path
+ */
+public infix fun HttpMethod.at(route: String): RouteSpec {
+    val spec = RouteSpec(listOf(this), route)
+    return spec
 }
 
 /**
@@ -74,6 +83,4 @@ public infix fun RouteSpec.requiring(auth: AuthorizationConfigure<out BaseCreden
 public infix fun <T> RouteSpec.handledBy(handler: RequestHandler<T>): RegisteredRouteSpec<T> = RegisteredRouteSpec(
     route?.removePrefix("/") ?: error("Route must exists"),
     methods, params, authProvider, handler
-)
-
-
+).apply { RouteCollector.register(this) }

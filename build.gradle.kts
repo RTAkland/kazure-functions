@@ -12,7 +12,7 @@ plugins {
 val libVersion: String by extra
 
 allprojects {
-    group = "kazure"
+    group = "kazure.next"
     version = libVersion
 
     repositories {

@@ -23,10 +23,10 @@ buildConfig {
 
 gradlePlugin {
     plugins {
-        create("KAzure") {
-            id = "kazure"
-            displayName = "KAzure"
-            description = "Kotlin azure functions generator"
+        create("KAzureNext") {
+            id = "kazure.next"
+            displayName = "KAzureNext"
+            description = "Kotlin azure functions generator next version"
             implementationClass = "cn.rtast.kazure.KAzureGradlePlugin"
         }
     }
