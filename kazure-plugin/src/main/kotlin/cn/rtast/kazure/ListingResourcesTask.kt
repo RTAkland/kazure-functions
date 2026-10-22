@@ -62,6 +62,6 @@ abstract class ListingResourcesTask : DefaultTask() {
                             UUID.randomUUID().toString().replace("-", "").substring(0, 5)
                         }: ByteArray by cn.rtast.kazure.resources.staticAssets"""
             }
-        indexFile.writeText("package kazure.generated.a.b.c.d.e.f.g.h.i.j.k\n$indexContent")
+        indexFile.writeText("package kazure.generated\n$indexContent")
     }
 }

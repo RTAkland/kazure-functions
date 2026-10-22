@@ -8,25 +8,25 @@
 package cn.rtast.kazure.resources
 
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStream
 import java.util.jar.JarFile
 
-internal fun readFileFromJar(filePathInJar: String): ByteArray {
+internal fun readFileFromJar(path: String): ByteArray =
+    readFileFromJarAsStream(path).use { it.readBytes() }
+
+internal fun readFileFromJarAsStream(path: String): InputStream {
     val jarPath = File(".").listFiles()!!.find { it.extension == "jar" }!!.toString()
-    JarFile(jarPath).use { jarFile ->
-        val entry = jarFile.getJarEntry(filePathInJar)
-            ?: throw IllegalArgumentException("File $filePathInJar not found in $jarPath")
-        jarFile.getInputStream(entry).use { inputStream ->
-            return inputStream.readBytes()
-        }
-    }
+    val jarFile = JarFile(jarPath)
+    val entry = jarFile.getJarEntry(path) ?: throw FileNotFoundException("File $path not found in $jarPath")
+    return jarFile.getInputStream(entry)
 }
 
 /**
- * Utilities to load resource files from the JAR
+ * Loads resource files from the JAR
  *
  * Provides methods to read resource content as text or bytes
  */
-@Deprecated("This API is unstable, not recommended to use.")
 public object Resources {
     /**
      * Read plain text content from jar
@@ -37,5 +37,10 @@ public object Resources {
      * Read raw bytes content from jar
      */
     public fun readBytes(path: String): ByteArray = readFileFromJar(path)
+
+    /**
+     * Read as [InputStream]
+     */
+    public fun readAsInputStream(path: String): InputStream = readFileFromJarAsStream(path)
 }
 

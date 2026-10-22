@@ -8,4 +8,4 @@
 package cn.rtast.kazure.auth.credentials
 
 @JvmInline
-public value class BearerCredential(public val token: String) : BaseCredential
+public value class HeaderCredential(public val token: String) : BaseCredential

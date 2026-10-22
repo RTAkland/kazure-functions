@@ -18,8 +18,6 @@ kotlin {
     jvmToolchain(11)
 
     explicitApi = ExplicitApiMode.Disabled
-
-//    compilerOptions.freeCompilerArgs.addAll("-Xcontext-parameters")
 }
 
 kazure {

@@ -11,11 +11,12 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toTypeName
-import java.util.UUID
+import java.util.*
 
 
 class KAzureProcessor(
     private val codeGenerator: CodeGenerator,
+    @Suppress("unused")
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private var invoked = false
@@ -50,20 +51,13 @@ class KAzureProcessor(
             val paramAnnotation = p.annotations.find { it.shortName.asString() == "BindingName" }
             if (paramAnnotation != null) {
                 val paramValue = resolveAnnotationParametersWithDefaults(paramAnnotation)["value"]
-                val bindingNameAnnotationSpec = AnnotationSpec.builder(
-                    ClassName("com.microsoft.azure.functions.annotation", "BindingName")
-                )
-                if (paramValue != null) {
-                    bindingNameAnnotationSpec.addMember("%S", paramValue)
-                }
+                val bindingNameAnnotationSpec = AnnotationSpec
+                    .builder(ClassName("com.microsoft.azure.functions.annotation", "BindingName"))
+                if (paramValue != null) bindingNameAnnotationSpec.addMember("%S", paramValue)
                 val paramSpec = ParameterSpec.builder(paramName, paramType)
-                    .addAnnotation(bindingNameAnnotationSpec.build())
-                    .build()
+                    .addAnnotation(bindingNameAnnotationSpec.build()).build()
                 params.add(paramSpec)
-            } else {
-                val paramSpec = ParameterSpec.builder(paramName, paramType).build()
-                params.add(paramSpec)
-            }
+            } else params.add(ParameterSpec.builder(paramName, paramType).build())
         }
         return params
     }
@@ -107,7 +101,7 @@ class KAzureProcessor(
             }.arguments.first().value as KSType
             val providerLiteralType = when {
                 providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.BasicAuthorizationProvider") -> "Basic"
-                providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.BearerAuthorizationProvider") -> "BearerToken"
+                providerKSType.isDirectSubclassOf("cn.rtast.kazure.auth.provider.HeaderAuthorizationProvider") -> "Header"
                 else -> throw IllegalStateException("Unknown auth provider type ${providerKSType.declaration.qualifiedName?.asString()}")
             }
             val firstParamName = func.parameters.first().name!!.asString()
@@ -115,7 +109,9 @@ class KAzureProcessor(
             val allParamName = func.parameters.joinToString(", ") { it.name!!.asString() }
             newFunction.addCode(
                 """
-                |val c = cn.rtast.kazure.auth.provider.func.__get${providerLiteralType}Credential($firstParamName) ?: return req.___u
+                |val c = cn.rtast.kazure.auth.provider.func.__get${providerLiteralType}Credential($firstParamName, ${
+                    if (providerLiteralType == "Header") providerKSType.declaration.qualifiedName!!.asString() + ".header" else ""
+                }) ?: return req.___u
                 |return if (!context($firstParamName, $secondParamName, c){${providerKSType.declaration.qualifiedName!!.asString()}.__verifyWith()}) req.___u
                 |else with(c) { ${func.qualifiedName?.asString()}($allParamName) }
                 """.trimMargin()
@@ -130,27 +126,27 @@ class KAzureProcessor(
             "KAzureGenerated"
         )
         file.write(fileSpec.toString().toByteArray())
-        val initializerCode = CodeBlock.builder()
-            .add("listOf(\"${UUID.randomUUID().toString().replace("-", "")}\", \"${UUID.randomUUID().toString().replace("-", "")}\",")
-            .apply {
-                processedOriginFunctionsList.forEachIndexed { index, item ->
-                    if (index > 0) add(", ")
-                    add("%S", item)
-                }
-            }.add(")").build()
+        val initializerCode = CodeBlock.builder().add(
+            "listOf(\"${UUID.randomUUID().toString().replace("-", "")}\", \"${
+                UUID.randomUUID().toString().replace("-", "")
+            }\","
+        ).apply {
+            processedOriginFunctionsList.forEachIndexed { index, item ->
+                if (index > 0) add(", ")
+                add("%S", item)
+            }
+        }.add(")").build()
         val listOfString = ClassName("kotlin.collections", "List")
         val stringClass = ClassName("kotlin", "String")
         val processedFunctionsPropertySpec = PropertySpec.builder(
-            "_____________________________________processed_______________________________",
+            "___kazure_processed_functions",
             listOfString.parameterizedBy(stringClass)
         ).initializer(initializerCode).build()
 
-        val processedOriginFunctionsFileSpec = FileSpec.builder("kazure.generated.a.b.c.d.e.f.g.h.i.j.k", "processed")
+        val processedOriginFunctionsFileSpec = FileSpec.builder("kazure.generated", "processed")
             .addProperty(processedFunctionsPropertySpec).build()
         val processedFunctionsFile = codeGenerator.createNewFile(
-            Dependencies.ALL_FILES,
-            "kazure.generated.a.b.c.d.e.f.g.h.i.j.k",
-            "processed"
+            Dependencies.ALL_FILES, "kazure.generated", "processed"
         )
         processedFunctionsFile.write(processedOriginFunctionsFileSpec.toString().toByteArray())
         return emptyList()

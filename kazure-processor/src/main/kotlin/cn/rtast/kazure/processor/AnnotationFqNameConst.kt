@@ -6,9 +6,9 @@
 
 package cn.rtast.kazure.processor
 
-@Suppress("PropertyName")
+@Suppress("TopLevelPropertyName")
 val HttpRoutingFqName = "cn.rtast.kazure.trigger.HttpRouting"
 
-@Suppress("PropertyName")
+@Suppress("TopLevelPropertyName")
 val KspTaggedRoutingFqName = "cn.rtast.kazure.trigger.internal.KspTaggedRouting"
 

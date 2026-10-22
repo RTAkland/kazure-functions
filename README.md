@@ -41,21 +41,13 @@ pluginManagement {
 }
 ```
 
-### Apply the gradle plugin
+### Apply the Gradle plugin
 
 ```kotlin
 plugins {
     id("cn.rtast.kazure") version "<version>"
-    id("com.google.devtools.ksp") version "2.2.21-2.0.4"
+    id("com.google.devtools.ksp") version "2.3.12"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"  // It is best to use the latest version.
-}
-
-// Enable context-parameter for auth provider Required!!!
-kotlin {
-    jvmToolchain(11)
-    compilerOptions {
-        freeCompilerArgs.set(listOf("-Xcontext-parameters"))
-    }
 }
 ```
 

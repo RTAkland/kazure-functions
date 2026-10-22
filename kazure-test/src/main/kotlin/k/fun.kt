@@ -12,6 +12,9 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.auth.AuthConsumer
 import cn.rtast.kazure.auth.credentials.BasicCredential
+import cn.rtast.kazure.auth.credentials.HeaderCredential
+import cn.rtast.kazure.resources.StaticAssets
+import cn.rtast.kazure.resources.staticAssets
 import cn.rtast.kazure.response.respondText
 import cn.rtast.kazure.trigger.HttpRouting
 
@@ -59,10 +62,10 @@ fun indexWithAuth1(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
 
 //
 @HttpRouting("hello/auth3")
-@AuthConsumer(Basic1AuthProvider::class)
-context(cred: BasicCredential)
+@AuthConsumer(Tok::class)
+context(cred: HeaderCredential)
 fun indexWithAuth2(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
-    return req.respondText("Hello" + cred.username)
+    return req.respondText("Hello" + cred.token)
 }
 
 //fun main() {
@@ -71,8 +74,8 @@ fun indexWithAuth2(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
 //    }
 //}
 
-//@StaticAssets("c", "a")
-//val c: ByteArray by staticAssets
+@StaticAssets("c", "test/a")
+val c: ByteArray by staticAssets
 //
 //@StaticAssets("d", "a")
 //val d: ByteArray by staticAssets

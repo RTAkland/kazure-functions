@@ -45,7 +45,7 @@ class KAzureExtension(
         val processedFuncList = mutableListOf<String>()
         moduleFragment.files.forEach { file ->
             file.declarations.filterIsInstance<IrProperty>().forEach { prop ->
-                if (prop.name.asString() == "_____________________________________processed_______________________________") {
+                if (prop.name.asString() == "___kazure_processed_functions") {
                     processedFuncList.addAll(extractStringListFromProperty(prop))
                 }
             }

@@ -5,11 +5,8 @@
  */
 
 
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package cn.rtast.kazure.util
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 public val kazureInternalJson: Json = Json {

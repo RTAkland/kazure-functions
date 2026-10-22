@@ -13,7 +13,7 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.auth.credentials.BaseCredential
 import cn.rtast.kazure.auth.credentials.BasicCredential
-import cn.rtast.kazure.auth.credentials.BearerCredential
+import cn.rtast.kazure.auth.credentials.HeaderCredential
 import cn.rtast.kazure.auth.provider.AuthorizationConfigure
 import cn.rtast.kazure.response.respondText
 import com.microsoft.azure.functions.HttpStatus
@@ -41,18 +41,11 @@ public fun <T> __getBasicCredential(req: HttpRequest<T>): BasicCredential? {
     return BasicCredential(username, password)
 }
 
-public fun <T> __getTokenCredential(req: HttpRequest<T>, scheme: String): String? {
-    val authorizationHeader = req.headers["authorization"] ?: return null
-    val prefix = "$scheme "
-    if (!authorizationHeader.startsWith(prefix, ignoreCase = true)) return null
-    val token = authorizationHeader.removePrefix(prefix).trim()
+public fun <T> __getHeaderCredential(req: HttpRequest<T>, header: String): HeaderCredential? {
+    val authorizationHeader = req.headers[header.lowercase()] ?: return null
+    val token = authorizationHeader.trim()
     if (token.isEmpty()) return null
-    return token
-}
-
-public fun <T> __getBearerTokenCredential(req: HttpRequest<T>): BearerCredential? {
-    val token = __getTokenCredential(req, "Bearer")
-    return if (token == null) null else BearerCredential(token)
+    return HeaderCredential(token)
 }
 
 context(request: HttpRequest<*>, httpContext: HttpContext, credential: T)
