@@ -7,7 +7,7 @@
 
 package cn.rtast.kazure
 
-public typealias HttpRequest<T> = com.microsoft.azure.functions.HttpRequestMessage<T>
+public typealias HttpRequest = com.microsoft.azure.functions.HttpRequestMessage<ByteArray?>
 public typealias HttpContext = com.microsoft.azure.functions.ExecutionContext
 public typealias HttpResponse = com.microsoft.azure.functions.HttpResponseMessage
 public typealias HttpResponseBuilder = com.microsoft.azure.functions.HttpResponseMessage.Builder

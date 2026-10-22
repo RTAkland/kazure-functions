@@ -17,6 +17,10 @@ import cn.rtast.kazure.auth.credentials.HeaderCredential
  */
 public abstract class HeaderAuthorizationProvider(public val header: String = "authorization") :
     AuthorizationConfigure<HeaderCredential> {
-    context(request: HttpRequest<*>, context: HttpContext, credential: HeaderCredential)
+    init {
+        require(header.isNotEmpty()) { "Header based authorization provider value should not be empty" }
+    }
+
+    context(request: HttpRequest, context: HttpContext, credential: HeaderCredential)
     public abstract override fun verify(): Boolean
 }

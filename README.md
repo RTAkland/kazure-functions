@@ -17,7 +17,7 @@ Kotlin versions and plugin version table
 | Kotlin   | KAzure         | Note                     |
 |----------|----------------|--------------------------|
 | `2.2.21` | `1.3.2-2.2.21` | Plugin `kazure`          |
-| `2.4.21` | `1.3.3-2.4.21` | Plugin `cn.rtast.kazure` |
+| `2.4.21` | `1.3.4-2.4.21` | Plugin `cn.rtast.kazure` |
 
 ## Configure
 
@@ -27,7 +27,7 @@ Add maven repository
 // build.gradle.kts
 repositories {
     mavenCentral()
-    maven("https://repo.maven.rtast.cn/releases")
+    maven("https://repo.rtast.cn/packages")
 }
 
 // settings.gradle.kts
@@ -36,7 +36,7 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
-        maven("https://repo.maven.rtast.cn/releases/")
+        maven("https://repo.rtast.cn/packages")
     }
 }
 ```

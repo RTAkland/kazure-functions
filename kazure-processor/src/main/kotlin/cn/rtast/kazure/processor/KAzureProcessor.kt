@@ -90,6 +90,12 @@ class KAzureProcessor(
                 .addMember("authLevel = %L", routingValues["authLevel"]!!)
                 .build()
             newFunction.addAnnotation(httpRoutingAnnotationSpec)
+            newFunction.addAnnotation(
+                AnnotationSpec.builder(
+                    ClassName("cn.rtast.kazure", "InternalCompilerApi")
+                ).build()
+            )
+
             newFunction.addParameters(createParameterSpecs(func))
             newFunction.returns(func.returnType?.toTypeName()!!)
             val taggedAnnotationClassName = ClassName("cn.rtast.kazure.trigger.internal", "KspTaggedRouting")

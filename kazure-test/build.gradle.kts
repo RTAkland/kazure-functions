@@ -2,8 +2,9 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     alias(libs.plugins.ksp)
-    id("cn.rtast.kazure") version "1.3.3-2.4.21"
+    id("cn.rtast.kazure") version "1.3.4-2.4.21"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"
+    alias(libs.plugins.kotlinx.serilization)
 }
 
 repositories {

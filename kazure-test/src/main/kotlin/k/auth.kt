@@ -15,13 +15,13 @@ import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 import cn.rtast.kazure.auth.provider.HeaderAuthorizationProvider
 
 object Basic1AuthProvider : BasicAuthorizationProvider() {
-    context(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential)
+    context(request: HttpRequest, context: HttpContext, credential: BasicCredential)
     override fun verify(): Boolean = true
 }
 
 object Tok : HeaderAuthorizationProvider("sec-ch-ua-platform") {
     context(
-        request: HttpRequest<*>,
+        request: HttpRequest,
         context: HttpContext,
         credential: HeaderCredential,
     )

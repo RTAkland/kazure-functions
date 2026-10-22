@@ -47,7 +47,7 @@ class StaticRoutingProcessor(
             val functionBody = """
                 |@cn.rtast.kazure.trigger.HttpRouting("$route")
                 |public fun $funcName
-                |(req: com.microsoft.azure.functions.HttpRequestMessage<kotlin.Any?>,
+                |(req: cn.rtast.kazure.HttpRequest,
                 |ctx: com.microsoft.azure.functions.ExecutionContext): com.microsoft.azure.functions.HttpResponseMessage
                 |= req.respondInputStream(cn.rtast.kazure.resources.Resources.readAsInputStream("$res"),
                 |headers = mapOf("Content-Type" to "${getMimeType(res)}"))

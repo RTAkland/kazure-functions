@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     implementation(libs.kotlin.gradle.plugin.api)
-    implementation(project(":kazure-framework"))
+    implementation(project(":kazure-runtime"))
     implementation(libs.kotlin.gradle.plugin)
 }
 

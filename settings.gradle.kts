@@ -2,12 +2,6 @@
 
 rootProject.name = "kazure"
 
-include(":kazure-compiler")
-include(":kazure-framework")
-include(":kazure-plugin")
-include(":kazure-processor")
-include(":kazure-test")
-
 pluginManagement {
     repositories {
         mavenCentral()
@@ -15,3 +9,18 @@ pluginManagement {
         mavenLocal()
     }
 }
+
+fun includePathBasedSubModule(name: String, path: String? = null) {
+    include(name)
+    project(name).projectDir = file(path ?: "lib-$name")
+}
+
+include(
+    ":kazure-compiler",
+    ":kazure-runtime",
+    ":kazure-plugin",
+    ":kazure-processor",
+    ":kazure-test"
+)
+
+includePathBasedSubModule(":kazure-serialization-protobuf", "kazure-serialization/serialization-protobuf")

@@ -29,6 +29,7 @@ subprojects {
     kotlin {
         explicitApi()
         compilerOptions.jvmTarget = JvmTarget.JVM_11
+        compilerOptions.freeCompilerArgs.addAll("-Xcompanion-blocks-and-extensions")
     }
 
     tasks.compileJava {

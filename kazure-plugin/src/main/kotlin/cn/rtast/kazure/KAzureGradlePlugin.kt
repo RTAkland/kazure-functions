@@ -45,7 +45,7 @@ class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
         super.apply(target)
-        target.dependencies.add("api", "cn.rtast.kazure:kazure-framework:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
+        target.dependencies.add("api", "cn.rtast.kazure:kazure-runtime:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
         target.pluginManager.apply("com.microsoft.azure.azurefunctions")
         target.pluginManager.apply("com.google.devtools.ksp")
         target.dependencies.add("ksp", "cn.rtast.kazure:kazure-processor:${BuildConfig.KOTLIN_PLUGIN_VERSION}")

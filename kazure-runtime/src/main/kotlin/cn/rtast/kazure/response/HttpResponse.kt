@@ -10,7 +10,8 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
 import cn.rtast.kazure.HttpResponseBuilder
 import cn.rtast.kazure.HttpStatus
-import cn.rtast.kazure.util.toJson
+import cn.rtast.kazure.negotiation.BodyConverterRegistry
+import cn.rtast.kazure.negotiation.MediaType
 import java.io.File
 import java.io.InputStream
 
@@ -18,18 +19,16 @@ private typealias Headers = Map<String, String>
 
 
 @Suppress("FunctionName")
-public fun <T> HttpRequest<T>.__builder(headers: Headers, status: HttpStatus): HttpResponseBuilder {
+public fun HttpRequest.__builder(headers: Headers, status: HttpStatus): HttpResponseBuilder {
     var builder = this.createResponseBuilder(status)
-    for ((k, v) in headers) {
-        builder = builder.header(k, v)
-    }
+    for ((k, v) in headers) builder = builder.header(k, v)
     return builder
 }
 
 /**
  * Respond plain text content
  */
-public fun <T> HttpRequest<T>.respondText(
+public fun HttpRequest.respondText(
     body: String,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
@@ -38,7 +37,7 @@ public fun <T> HttpRequest<T>.respondText(
 /**
  * Respond a bytes content
  */
-public fun <T> HttpRequest<T>.respondBytes(
+public fun HttpRequest.respondBytes(
     bytes: ByteArray,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
@@ -47,7 +46,7 @@ public fun <T> HttpRequest<T>.respondBytes(
 /**
  * Respond an [InputStream]}
  */
-public fun <T> HttpRequest<T>.respondInputStream(
+public fun HttpRequest.respondInputStream(
     stream: InputStream,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
@@ -56,38 +55,38 @@ public fun <T> HttpRequest<T>.respondInputStream(
 /**
  * Respond a file
  */
-public fun <T> HttpRequest<T>.respondFile(
+public fun HttpRequest.respondFile(
     file: File,
-    headers: Map<String, String> = mapOf(),
     status: HttpStatus = HttpStatus.OK,
+    headers: Map<String, String> = mapOf(),
 ): HttpResponse = respondBytes(file.readBytes(), status, headers)
 
 /**
  * Respond a redirect
  */
-public fun <T> HttpRequest<T>.respondRedirect(
-    url: String,
+public fun HttpRequest.respondRedirect(
+    location: String,
     redirectType: RedirectType = RedirectType.FOUND,
     headers: Map<String, String> = mapOf(),
 ): HttpResponse = this.__builder(headers, redirectType.httpStatus)
-    .body("Redirecting").header("Location", url).build()
+    .body("Redirecting").header("Location", location).build()
 
-/**
- * Respond any type content
- */
-public fun <T> HttpRequest<T>.respond(
-    body: Any? = null,
+public fun HttpRequest.respondEmpty(
     status: HttpStatus,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = if (body != null) this.__builder(headers, status).body(body).build()
-else this.__builder(headers, status).build()
+): HttpResponse = __builder(headers, status).build()
 
-/**
- * Respond json content
- * Auto deserialization to json text
- */
-public inline fun <T, reified R> HttpRequest<T>.respondJson(
-    data: R,
+public inline fun <reified T> HttpRequest.respond(
+    value: T,
     status: HttpStatus = HttpStatus.OK,
     headers: Map<String, String> = mapOf(),
-): HttpResponse = this.__builder(headers, status).body(data.toJson()).build()
+    mediaType: MediaType? = null,
+    registry: BodyConverterRegistry = BodyConverterRegistry.DefaultConverters,
+): HttpResponse {
+    val ct = mediaType ?: registry.defaultMediaType()
+    val bytes = registry.encode(value, ct)
+    val mergedHeaders = headers.toMutableMap()
+    if (mergedHeaders.keys.none { it.equals("content-type", ignoreCase = true) })
+        mergedHeaders["content-type"] = ct.toString()
+    return __builder(mergedHeaders, status).body(bytes).build()
+}

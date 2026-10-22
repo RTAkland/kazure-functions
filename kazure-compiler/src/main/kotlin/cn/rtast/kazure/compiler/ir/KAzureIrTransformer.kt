@@ -70,8 +70,6 @@ class KAzureIrTransformer(
         )
     }
 
-    ///////////////////////////////////////////////////////
-
     fun handleHttpFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
         if (processedFuncList.any { func.fqNameWhenAvailable?.asString() == it }) return
         addFunctionNameToFunction(pluginContext, func, func.name.asString())
@@ -85,6 +83,7 @@ class KAzureIrTransformer(
         // add @HttpTrigger into request param
         requestParam.addAnnotation(pluginContext, HttpTriggerFqName) {
             arguments[0] = "req".irString(irBuiltIns)
+            arguments[1] = "binary".irString(irBuiltIns)
             arguments[2] = path.removePrefix("/").irString(irBuiltIns)
             arguments[3] = methodsValue
             arguments[4] = authLevelValue
@@ -92,97 +91,11 @@ class KAzureIrTransformer(
         }
     }
 
-    private fun handleBlobFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        val contentParam = func.valueParameters[0]
-        // add @BlobTrigger annotation
-        val path = annotation.getParameterValue("path")!!
-        val connection = annotation.getParameterValue("connection") ?: "".irString(irBuiltIns)
-        val source = annotation.getParameterValue("source") ?: "".irString(irBuiltIns)
-        contentParam.addAnnotation(pluginContext, BlobTriggerFqName) {
-            arguments[0] = "blob".irString(irBuiltIns)
-            arguments[2] = path
-            arguments[3] = connection
-            arguments[4] = source
-            contentParam.annotations += this
-        }
-    }
-
-    private fun handleEventHubFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        val eventParam = func.valueParameters[0]
-        // add @EventHubTrigger annotation
-        val eventHubName = annotation.getParameterValue("eventHubName")!!
-        val connection = annotation.getParameterValue("connection")!!
-        val cardinality = annotation.getParameterValue("cardinality")
-            ?: generateDefaultEnumIrExpression(CardinalityFqName)
-        val consumerGroup = annotation.getParameterValue("consumerGroup")
-            ?: $$"$Default".irString(irBuiltIns)
-        eventParam.addAnnotation(pluginContext, EventHubTriggerFqName) {
-            arguments[0] = "eh".irString(irBuiltIns)
-            arguments[2] = eventHubName
-            arguments[3] = cardinality
-            arguments[4] = consumerGroup
-            arguments[5] = connection
-            eventParam.annotations += this
-        }
-    }
-
-    private fun handleTimerFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        val schedule = (annotation.getParameterValue("schedule") as IrConstImpl).value as String
-        // add @TimerTrigger annotation
-        val timerInfoParam = func.valueParameters[0]
-        timerInfoParam.addAnnotation(pluginContext, TimerTriggerFqName) {
-            arguments[0] = "timer".irString(irBuiltIns)
-            arguments[2] = schedule.irString(irBuiltIns)
-            timerInfoParam.annotations += this
-        }
-    }
-
-    private fun handleQueueFunction(func: IrSimpleFunction, annotation: IrConstructorCall) {
-        val messageParam = func.valueParameters[0]
-        // add @QueueTrigger annotation
-        val queueName = annotation.getParameterValue("queueName")!!
-        val connection = annotation.getParameterValue("connection")
-            ?: "".irString(irBuiltIns)
-        messageParam.addAnnotation(pluginContext, QueueTriggerFqName) {
-            arguments[0] = "queue".irString(irBuiltIns)
-            arguments[2] = queueName
-            arguments[3] = connection
-            messageParam.annotations += this
-        }
-    }
-
-    ///////////////////////////////////////
-
     override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
         when {
             declaration.hasAnnotation(HttpRoutingFqName) -> {
-//                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
                 val ann = declaration.getAnnotation(HttpRoutingFqName)!!
                 handleHttpFunction(declaration, ann)
-            }
-
-            declaration.hasAnnotation(BlobRoutingFqName) -> {
-                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
-                val ann = declaration.getAnnotation(BlobRoutingFqName)!!
-                handleBlobFunction(declaration, ann)
-            }
-
-            declaration.hasAnnotation(TimerRoutingFqName) -> {
-                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
-                val ann = declaration.getAnnotation(TimerRoutingFqName)!!
-                handleTimerFunction(declaration, ann)
-            }
-
-            declaration.hasAnnotation(QueueRoutingFqName) -> {
-                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
-                val ann = declaration.getAnnotation(QueueRoutingFqName)!!
-                handleQueueFunction(declaration, ann)
-            }
-
-            declaration.hasAnnotation(EventHubRoutingFqName) -> {
-                addFunctionNameToFunction(pluginContext, declaration, declaration.name.asString())
-                val ann = declaration.getAnnotation(EventHubRoutingFqName)!!
-                handleEventHubFunction(declaration, ann)
             }
 
             else -> return super.visitFunctionNew(declaration)

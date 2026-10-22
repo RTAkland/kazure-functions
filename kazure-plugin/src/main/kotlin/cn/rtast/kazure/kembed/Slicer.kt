@@ -60,7 +60,7 @@ fun List<File>.generateIndex(
     indexContent.appendLine(")")
     indexContent.apply {
         appendLine("public fun getResource(path: String): Resource {")
-        appendLine("val chunk = requireNotNull(resourceIndex[path]) { throw IllegalStateException(\"资源不存在 \$path\") }")
+        appendLine("val chunk = requireNotNull(resourceIndex[path]) { throw IllegalStateException(\"Resource not exists \$path\") }")
         appendLine("return Resource(chunk.chunks, isCompression)")
         appendLine("}")
     }

@@ -10,7 +10,7 @@ val annotationsRuntimeClasspath: Configuration by configurations.creating { isTr
 
 dependencies {
     compileOnly(libs.kotlin.compiler)
-    annotationsRuntimeClasspath(project(":kazure-framework"))
+    annotationsRuntimeClasspath(project(":kazure-runtime"))
     compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.auto.service)
     kapt(libs.auto.service)
