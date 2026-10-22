@@ -8,12 +8,14 @@
 
 package cn.rtast.kazure.auth.provider.func
 
+import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
+import cn.rtast.kazure.auth.credentials.BaseCredential
 import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.auth.credentials.BearerCredential
-import cn.rtast.kazure.auth.credentials.JwtCredential
-import cn.rtast.kazure.response.respond
+import cn.rtast.kazure.auth.provider.AuthorizationConfigure
+import cn.rtast.kazure.response.respondText
 import com.microsoft.azure.functions.HttpStatus
 import kotlin.io.encoding.Base64
 
@@ -39,15 +41,6 @@ public fun <T> __getBasicCredential(req: HttpRequest<T>): BasicCredential? {
     return BasicCredential(username, password)
 }
 
-public fun <T> __getJwtTokenCredential(req: HttpRequest<T>): JwtCredential? {
-    val authorizationHeader = req.headers["authorization"] ?: return null
-    val prefix = "Bearer "
-    if (!authorizationHeader.startsWith(prefix, ignoreCase = true)) return null
-    val token = authorizationHeader.removePrefix(prefix).trim()
-    if (token.isEmpty()) return null
-    return JwtCredential(token)
-}
-
 public fun <T> __getTokenCredential(req: HttpRequest<T>, scheme: String): String? {
     val authorizationHeader = req.headers["authorization"] ?: return null
     val prefix = "$scheme "
@@ -62,7 +55,7 @@ public fun <T> __getBearerTokenCredential(req: HttpRequest<T>): BearerCredential
     return if (token == null) null else BearerCredential(token)
 }
 
-///////////////////////////////////////
+context(request: HttpRequest<*>, httpContext: HttpContext, credential: T)
+public fun <T : BaseCredential> AuthorizationConfigure<T>.__verifyWith(): Boolean = verify()
 
-public fun <T> __unAuthorized(request: HttpRequest<T>): HttpResponse =
-    request.respond("UNAUTHORIZED", HttpStatus.UNAUTHORIZED)
+public val HttpRequest<*>.___u: HttpResponse get() = respondText("UNAUTHORIZED", status = HttpStatus.UNAUTHORIZED)

@@ -30,7 +30,7 @@ fun IrClass.isSubclassOf(targetInterfaceFqName: FqName): Boolean {
     }
 }
 
-fun FqName.refCls(ctx: IrPluginContext) = ctx.referenceClass(this.classId)!!
+fun FqName.refCls(ctx: IrPluginContext) = ctx.finderForBuiltins().findClass(this.classId)!!
 
 fun IrClassReference.isSubclassOf(fqName: FqName): Boolean {
     return this.symbol.superTypes().any { it.classFqName == fqName }

@@ -10,7 +10,6 @@ package k
 import cn.rtast.kazure.HttpContext
 import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.HttpResponse
-import cn.rtast.kazure.Param
 import cn.rtast.kazure.auth.AuthConsumer
 import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.response.respondText
@@ -51,17 +50,17 @@ import cn.rtast.kazure.trigger.HttpRouting
 //    return req.respondText("Hello" + cred.username + " at $s")
 //}
 //
-context(cred: BasicCredential)
 @HttpRouting("hello/auth2")
 @AuthConsumer(Basic1AuthProvider::class)
+context(cred: BasicCredential)
 fun indexWithAuth1(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
     return req.respondText("Hello" + cred.username)
 }
 
 //
-context(cred: BasicCredential)
 @HttpRouting("hello/auth3")
 @AuthConsumer(Basic1AuthProvider::class)
+context(cred: BasicCredential)
 fun indexWithAuth2(req: HttpRequest<String?>, ctx: HttpContext): HttpResponse {
     return req.respondText("Hello" + cred.username)
 }

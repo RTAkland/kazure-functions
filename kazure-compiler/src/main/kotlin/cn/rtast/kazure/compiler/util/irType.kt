@@ -14,5 +14,5 @@ import org.jetbrains.kotlin.ir.types.starProjectedType
 import org.jetbrains.kotlin.name.FqName
 
 fun FqName.irType(ctx: IrPluginContext): IrSimpleType {
-    return ctx.referenceClass(this.classId)!!.starProjectedType
+    return ctx.finderForBuiltins().findClass(this.classId)!!.starProjectedType
 }

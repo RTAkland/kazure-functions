@@ -12,7 +12,7 @@ plugins {
 val libVersion: String by extra
 
 allprojects {
-    group = "kazure"
+    group = "cn.rtast.kazure"
     version = libVersion
 
     repositories {
@@ -23,8 +23,8 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jetbrains.kotlin.jvm")
-    apply(plugin = "maven-publish")
+    pluginManager.apply("kotlin")
+    pluginManager.apply("maven-publish")
 
     kotlin {
         explicitApi()
@@ -40,12 +40,16 @@ subprojects {
 
     publishing {
         repositories {
-            mavenLocal()
-            maven("https://repo.maven.rtast.cn/releases") {
-                name = "RTAST"
-                credentials {
-                    username = "RTAkland"
-                    password = System.getenv("PUBLISH_TOKEN")
+            maven("https://repo.rtast.cn/packages") {
+                credentials(HttpHeaderCredentials::class) {
+                    name = "Authorization"
+                    val token = providers.gradleProperty("PUBLISH_TOKEN")
+                        .orElse(providers.environmentVariable("PUBLISH_TOKEN"))
+                        .orNull
+                    value = "Bearer $token"
+                }
+                authentication {
+                    create<HttpHeaderAuthentication>("header")
                 }
             }
         }

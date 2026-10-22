@@ -11,12 +11,15 @@ import cn.rtast.kazure.util.zlibDecompress
 import kotlin.io.encoding.Base64
 
 public class Resource(bSource: List<String>, private val compressed: Boolean = false) {
-    private val source = bSource.map { Base64.decode(it) }.merge()
-    public fun asByteArray(): ByteArray = if (compressed) source.zlibDecompress() else source
-    public fun asString(): String = asByteArray().decodeToString()
+    private val raw: ByteArray by lazy(LazyThreadSafetyMode.NONE) { bSource.map(Base64::decode).merge() }
+    private val decompressed: ByteArray by lazy(LazyThreadSafetyMode.NONE) { if (compressed) raw.zlibDecompress() else raw }
+
+    public fun asByteArray(): ByteArray = decompressed
+    public fun asString(): String = decompressed.decodeToString()
 
     private fun List<ByteArray>.merge(): ByteArray {
-        val totalSize = this.sumOf { it.size }
+        if (size == 1) return this[0]
+        val totalSize = sumOf { it.size }
         val result = ByteArray(totalSize)
         var offset = 0
         for (chunk in this) {

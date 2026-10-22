@@ -14,6 +14,7 @@ dependencies {
     compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.auto.service)
     kapt(libs.auto.service)
+    testImplementation(kotlin("test"))
 }
 
 buildConfig {

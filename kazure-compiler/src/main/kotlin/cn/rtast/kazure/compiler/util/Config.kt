@@ -9,6 +9,6 @@ package cn.rtast.kazure.compiler.util
 
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 
-fun <T> String.toCompilerConfigKey(): CompilerConfigurationKey<T> =
+fun <T : Any> String.toCompilerConfigKey(): CompilerConfigurationKey<T> =
     CompilerConfigurationKey(this)
 

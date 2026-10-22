@@ -15,8 +15,7 @@ import cn.rtast.kazure.compiler.util.irString
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
-import org.jetbrains.kotlin.ir.expressions.impl.fromSymbolOwner
+import org.jetbrains.kotlin.ir.expressions.impl.IrAnnotationImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.util.constructors
@@ -29,14 +28,16 @@ fun addFunctionNameToFunction(
 ) {
     val irBuiltIns = pluginContext.irBuiltIns
     // add @FunctionName annotation
-    val functionNameAnnotationClass = pluginContext.referenceClass(FunctionNameFqName.classId)!!
+    val finder = pluginContext.finderForBuiltins()
+    val functionNameAnnotationClass = finder.findClass(FunctionNameFqName.classId)!!
     val functionNameConstructor = functionNameAnnotationClass.constructors.firstOrNull()!!
-    val functionNameConstructorCallImpl = IrConstructorCallImpl.fromSymbolOwner(
-        UNDEFINED_OFFSET, UNDEFINED_OFFSET,
+    val annotation = IrAnnotationImpl(
+        UNDEFINED_OFFSET,
+        UNDEFINED_OFFSET,
         functionNameAnnotationClass.defaultType,
-        functionNameConstructor
-    )
-    functionNameConstructorCallImpl.arguments[0] =
-        "f_${funcName}_${UUID.randomUUID().toString().replace("-", "")}".irString(irBuiltIns)
-    target.annotations += functionNameConstructorCallImpl
+        functionNameConstructor,
+        typeArgumentsCount = 0,
+        constructorTypeArgumentsCount = 0
+    ).apply { arguments[0] = "f_${funcName}_${UUID.randomUUID().toString().replace("-", "")}".irString(irBuiltIns) }
+    target.annotations += annotation
 }

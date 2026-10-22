@@ -7,11 +7,8 @@
 
 package cn.rtast.kazure.resources
 
-import cn.rtast.kazure.resources.kembed.Chunk
-import cn.rtast.kazure.resources.kembed.Resource
 import java.io.File
 import java.util.jar.JarFile
-import kotlin.reflect.KProperty
 
 internal fun readFileFromJar(filePathInJar: String): ByteArray {
     val jarPath = File(".").listFiles()!!.find { it.extension == "jar" }!!.toString()

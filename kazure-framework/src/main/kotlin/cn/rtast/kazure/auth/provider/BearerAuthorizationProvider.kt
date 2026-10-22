@@ -16,5 +16,6 @@ import cn.rtast.kazure.auth.credentials.BearerCredential
  * Any string in authorization header
  */
 public interface BearerAuthorizationProvider : AuthorizationConfigure<BearerCredential> {
-    override fun verify(request: HttpRequest<*>, context: HttpContext, credential: BearerCredential): Boolean
+    context(request: HttpRequest<*>, context: HttpContext, credential: BearerCredential)
+    override fun verify(): Boolean
 }

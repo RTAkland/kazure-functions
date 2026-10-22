@@ -12,12 +12,7 @@ import cn.rtast.kazure.HttpRequest
 import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 
- object Basic1AuthProvider : BasicAuthorizationProvider {
-    override fun verify(
-        request: HttpRequest<*>,
-        context: HttpContext,
-        credential: BasicCredential,
-    ): Boolean {
-        return credential.username == "RTAkland"
-    }
+object Basic1AuthProvider : BasicAuthorizationProvider {
+    context(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential)
+    override fun verify(): Boolean = true
 }

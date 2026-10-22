@@ -80,10 +80,10 @@ class KAzureProcessor(
             .filterIsInstance<KSFunctionDeclaration>()
             .filter { it.annotations.any { an -> an.annotationType.resolve().declaration.qualifiedName?.asString() == "cn.rtast.kazure.auth.AuthConsumer" } }
         val fileSpecBuilder = FileSpec.builder("kazure.generated", "KAzureGenerated")
-            .addImport("cn.rtast.kazure.response", "respondText")
+            .addImport("cn.rtast.kazure.auth.provider.func", "___u")
+            .addImport("cn.rtast.kazure.auth.provider.func", "__verifyWith")
             .addImport("com.microsoft.azure.functions", "HttpMethod")
             .addImport("com.microsoft.azure.functions.annotation", "AuthorizationLevel")
-            .addImport("com.microsoft.azure.functions", "HttpStatus")
         val processedOriginFunctionsList = mutableListOf<String>()
         functions.forEach { func ->
             val newFunction = FunSpec.builder(func.simpleName.asString() + "_wrapped")
@@ -115,10 +115,9 @@ class KAzureProcessor(
             val allParamName = func.parameters.joinToString(", ") { it.name!!.asString() }
             newFunction.addCode(
                 """
-                |fun u() = $firstParamName.respondText("UNAUTHORIZED", status = HttpStatus.UNAUTHORIZED)
-                |val c = cn.rtast.kazure.auth.provider.func.__get${providerLiteralType}Credential($firstParamName) ?: return u()
-                |val r = ${providerKSType.declaration.qualifiedName!!.asString()}.verify($firstParamName, $secondParamName, c)
-                |return if (!r) u() else with(c) { ${func.qualifiedName?.asString()}($allParamName) }
+                |val c = cn.rtast.kazure.auth.provider.func.__get${providerLiteralType}Credential($firstParamName) ?: return req.___u
+                |return if (!context($firstParamName, $secondParamName, c){${providerKSType.declaration.qualifiedName!!.asString()}.__verifyWith()}) req.___u
+                |else with(c) { ${func.qualifiedName?.asString()}($allParamName) }
                 """.trimMargin()
             )
             fileSpecBuilder.addFunction(newFunction.build())

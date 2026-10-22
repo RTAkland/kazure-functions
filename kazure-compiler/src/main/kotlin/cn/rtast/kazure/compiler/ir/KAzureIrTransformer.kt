@@ -4,13 +4,12 @@
  * Date: 11/9/25
  */
 
-@file:OptIn(UnsafeDuringIrConstructionAPI::class, DeprecatedForRemovalCompilerApi::class)
+@file:OptIn(UnsafeDuringIrConstructionAPI::class)
 
 package cn.rtast.kazure.compiler.ir
 
 import cn.rtast.kazure.compiler.*
 import cn.rtast.kazure.compiler.util.*
-import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -42,9 +41,10 @@ class KAzureIrTransformer(
 ) : IrElementTransformerVoidWithContext() {
 
     private val irBuiltIns = pluginContext.irBuiltIns
+    private val finder = pluginContext.finderForBuiltins()
 
     private fun generateDefaultEnumIrExpression(fqName: FqName): IrExpression {
-        val authEnumClass = pluginContext.referenceClass(fqName.classId)!!
+        val authEnumClass = finder.findClass(fqName.classId)!!
         val entrySymbol = authEnumClass.owner.declarations
             .filterIsInstance<IrEnumEntry>()
             .first { it.name.asString() == "ANONYMOUS" }
@@ -53,7 +53,7 @@ class KAzureIrTransformer(
     }
 
     private fun generateDefaultHttpMethodsIrExpression(): IrExpression {
-        val httpMethodsClass = pluginContext.referenceClass(HttpMethodFqName.classId)!!
+        val httpMethodsClass = finder.findClass(HttpMethodFqName.classId)!!
         val enumEntry = httpMethodsClass.owner.declarations
             .filterIsInstance<IrEnumEntry>()
             .first { it.name.asString() == "GET" }
@@ -82,111 +82,12 @@ class KAzureIrTransformer(
             ?: generateDefaultEnumIrExpression(AuthorizationLevelFqName)
         val requestParam = func.valueParameters[0]
 
-//        func.getAnnotation(AuthConsumerFqName)?.let { authProviderAnnotation ->
-//            val irBuilder = pluginContext.irBuiltIns.createIrBuilder(func.symbol)
-//            val providerRef = (authProviderAnnotation.getParameterValue("provider") as
-//                    IrClassReferenceImpl)
-//            val providerSymbol = providerRef.symbol as IrClassSymbol
-//            val verifyFn = providerSymbol.owner.functions
-//                .first { it.name.asString() == "verify" && it.valueParameters.size == 3 }
-//            val providerExpr = IrGetObjectValueImpl(
-//                UNDEFINED_OFFSET,
-//                UNDEFINED_OFFSET,
-//                providerRef.type,
-//                providerSymbol
-//            )
-//            val verifyFnCall = IrCallImpl(
-//                UNDEFINED_OFFSET, UNDEFINED_OFFSET,
-//                verifyFn.returnType, verifyFn.symbol,
-//            ).apply {
-//                dispatchReceiver = providerExpr
-//                putValueArgument(0, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol))
-//                putValueArgument(1, IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[1].symbol))
-//                // set cred
-//                val callableId = when {
-//                    providerRef.isSubclassOf(BasicAuthorizationProviderFqName) -> {
-//                        CallableId(
-//                            "cn.rtast.kazure.auth.provider.func".fqName,
-//                            null, Name.identifier("__getBasicCredential")
-//                        )
-//                    }
-//
-//                    providerRef.isSubclassOf(BearerAuthorizationProviderFqName) -> {
-//                        CallableId(
-//                            "cn.rtast.kazure.auth.provider.func".fqName,
-//                            null, Name.identifier("__getBearerCredential")
-//                        )
-//                    }
-//
-//                    providerRef.isSubclassOf(JwtAuthorizationProviderFqName) -> {
-//                        CallableId(
-//                            "cn.rtast.kazure.auth.provider.func".fqName,
-//                            null, Name.identifier("__getJwtCredential")
-//                        )
-//                    }
-//
-//                    else -> throw IllegalStateException("Unknown authorization provider type")
-//                }
-//                val refFuncSymbol = pluginContext.referenceFunctions(callableId).first()
-//
-//                val getCredCall =
-//                    IrCallImpl(
-//                        UNDEFINED_OFFSET,
-//                        UNDEFINED_OFFSET,
-//                        refFuncSymbol.owner.returnType,
-//                        refFuncSymbol
-//                    ).apply {
-//                        putValueArgument(
-//                            0,
-//                            IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
-//                        )
-//                    }
-//                putValueArgument(2, getCredCall)
-//            }
-//
-//            val requestGet = IrGetValueImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, func.valueParameters[0].symbol)
-//            val unAuthorizedCallableId = CallableId(
-//                "cn.rtast.kazure.auth.provider.func".fqName,
-//                null, Name.identifier("__unAuthorized")
-//            )
-//            val unAuthFuncSymbol = pluginContext.referenceFunctions(unAuthorizedCallableId).first()
-//            val unAuthCall = IrCallImpl(
-//                UNDEFINED_OFFSET,
-//                UNDEFINED_OFFSET,
-//                unAuthFuncSymbol.owner.returnType,
-//                unAuthFuncSymbol
-//            ).apply { putValueArgument(0, requestGet) }
-//            val returnStatement = IrReturnImpl(
-//                UNDEFINED_OFFSET,
-//                UNDEFINED_OFFSET,
-//                unAuthCall.type,
-//                func.symbol,
-//                unAuthCall
-//            )
-//            val ifStatement = irBuilder.irIfThenElse(
-//                type = pluginContext.irBuiltIns.unitType,
-//                condition = irBuilder.irNot(verifyFnCall),
-//                thenPart = returnStatement,
-//                elsePart = irBuilder.irGetObjectValue(
-//                    pluginContext.irBuiltIns.unitType,
-//                    pluginContext.irBuiltIns.unitClass
-//                )
-//            )
-//            val newBody = pluginContext.irFactory.createBlockBody(
-//                UNDEFINED_OFFSET,
-//                UNDEFINED_OFFSET,
-//                listOf(ifStatement) + func.body!!.statements
-//            )
-//            func.body = newBody
-//            func.removeAnnotation(AuthConsumerFqName)
-//        }
-
         // add @HttpTrigger into request param
         requestParam.addAnnotation(pluginContext, HttpTriggerFqName) {
-            putValueArgument(0, "req".irString(irBuiltIns))
-            putValueArgument(2, path.removePrefix("/").irString(irBuiltIns))
-            putValueArgument(3, methodsValue)
-            putValueArgument(4, authLevelValue)
+            arguments[0] = "req".irString(irBuiltIns)
+            arguments[2] = path.removePrefix("/").irString(irBuiltIns)
+            arguments[3] = methodsValue
+            arguments[4] = authLevelValue
             requestParam.annotations += this
         }
     }
@@ -198,10 +99,10 @@ class KAzureIrTransformer(
         val connection = annotation.getParameterValue("connection") ?: "".irString(irBuiltIns)
         val source = annotation.getParameterValue("source") ?: "".irString(irBuiltIns)
         contentParam.addAnnotation(pluginContext, BlobTriggerFqName) {
-            putValueArgument(0, "blob".irString(irBuiltIns))
-            putValueArgument(2, path)
-            putValueArgument(3, connection)
-            putValueArgument(4, source)
+            arguments[0] = "blob".irString(irBuiltIns)
+            arguments[2] = path
+            arguments[3] = connection
+            arguments[4] = source
             contentParam.annotations += this
         }
     }
@@ -216,11 +117,11 @@ class KAzureIrTransformer(
         val consumerGroup = annotation.getParameterValue("consumerGroup")
             ?: $$"$Default".irString(irBuiltIns)
         eventParam.addAnnotation(pluginContext, EventHubTriggerFqName) {
-            putValueArgument(0, "eh".irString(irBuiltIns))
-            putValueArgument(2, eventHubName)
-            putValueArgument(3, cardinality)
-            putValueArgument(4, consumerGroup)
-            putValueArgument(5, connection)
+            arguments[0] = "eh".irString(irBuiltIns)
+            arguments[2] = eventHubName
+            arguments[3] = cardinality
+            arguments[4] = consumerGroup
+            arguments[5] = connection
             eventParam.annotations += this
         }
     }
@@ -230,8 +131,8 @@ class KAzureIrTransformer(
         // add @TimerTrigger annotation
         val timerInfoParam = func.valueParameters[0]
         timerInfoParam.addAnnotation(pluginContext, TimerTriggerFqName) {
-            putValueArgument(0, "timer".irString(irBuiltIns))
-            putValueArgument(2, schedule.irString(irBuiltIns))
+            arguments[0] = "timer".irString(irBuiltIns)
+            arguments[2] = schedule.irString(irBuiltIns)
             timerInfoParam.annotations += this
         }
     }
@@ -243,9 +144,9 @@ class KAzureIrTransformer(
         val connection = annotation.getParameterValue("connection")
             ?: "".irString(irBuiltIns)
         messageParam.addAnnotation(pluginContext, QueueTriggerFqName) {
-            putValueArgument(0, "queue".irString(irBuiltIns))
-            putValueArgument(2, queueName)
-            putValueArgument(3, connection)
+            arguments[0] = "queue".irString(irBuiltIns)
+            arguments[2] = queueName
+            arguments[3] = connection
             messageParam.annotations += this
         }
     }

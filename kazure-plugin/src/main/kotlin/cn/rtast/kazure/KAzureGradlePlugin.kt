@@ -10,7 +10,6 @@ package cn.rtast.kazure
 
 import cn.rtast.kazure.kembed.plugin.GenerateResourceTask
 import cn.rtast.kazure.kembed.plugin.KEmbeddableResourcesExtension
-import kazure.BuildConfig
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
@@ -46,10 +45,10 @@ class KAzureGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
         super.apply(target)
-        target.dependencies.add("api", "kazure:kazure-framework:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
+        target.dependencies.add("api", "cn.rtast.kazure:kazure-framework:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
         target.pluginManager.apply("com.microsoft.azure.azurefunctions")
         target.pluginManager.apply("com.google.devtools.ksp")
-        target.dependencies.add("ksp", "kazure:kazure-processor:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
+        target.dependencies.add("ksp", "cn.rtast.kazure:kazure-processor:${BuildConfig.KOTLIN_PLUGIN_VERSION}")
         registerExtension(target)
         registerTasks(target)
     }

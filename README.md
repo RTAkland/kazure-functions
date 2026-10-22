@@ -14,9 +14,10 @@ Read [docs](docs/README.md) for more information
 
 Kotlin versions and plugin version table
 
-| Kotlin   | KAzure         |
-|----------|----------------|
-| `2.2.21` | `1.3.2-2.2.21` |
+| Kotlin   | KAzure         | Note                     |
+|----------|----------------|--------------------------|
+| `2.2.21` | `1.3.2-2.2.21` | Plugin `kazure`          |
+| `2.4.21` | `1.3.3-2.4.21` | Plugin `cn.rtast.kazure` |
 
 ## Configure
 
@@ -44,7 +45,7 @@ pluginManagement {
 
 ```kotlin
 plugins {
-    id("kazure") version "<version>"
+    id("cn.rtast.kazure") version "<version>"
     id("com.google.devtools.ksp") version "2.2.21-2.0.4"
     id("com.microsoft.azure.azurefunctions") version "1.16.1"  // It is best to use the latest version.
 }
@@ -114,19 +115,16 @@ import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 
 // Make sure your auth provider class is object class
 object Basic1AuthProvider : BasicAuthorizationProvider {
-    override fun verify(
-        request: HttpRequest<*>,
-        context: HttpContext,
-        credential: BasicCredential,
-    ): Boolean {
+    context(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential)
+    override fun verify(): Boolean {
         return (credential.username == "admin" && credential.password == "123")
     }
 }
 
 // Using authorization provider
-context(cred: BasicCredential)
 @AuthConsumer(Basic1AuthProvider::class)
 @HttpRouting("/time3/{name}", methods = [HttpMethod.POST])
+context(cred: BasicCredential)
 fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpResponse {
     return req.respondText("Hello ${cred.username} at $name")
 }
@@ -134,4 +132,4 @@ fun myf(req: HttpRequest, ctx: HttpContext, @Param("name") name: String): HttpRe
 
 ## Run functions locally
 
-In gradle, run task: `azurefunctions:azureFunctionsRun`
+Run task: `azurefunctions:azureFunctionsRun`
