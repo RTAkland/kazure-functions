@@ -106,7 +106,7 @@ import cn.rtast.kazure.auth.credentials.BasicCredential
 import cn.rtast.kazure.auth.provider.BasicAuthorizationProvider
 
 // Make sure your auth provider class is object class
-object Basic1AuthProvider : BasicAuthorizationProvider {
+object Basic1AuthProvider : BasicAuthorizationProvider() {
     context(request: HttpRequest<*>, context: HttpContext, credential: BasicCredential)
     override fun verify(): Boolean {
         return (credential.username == "admin" && credential.password == "123")
